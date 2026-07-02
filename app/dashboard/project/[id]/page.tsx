@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { BentoResults, ProjectActions } from "@/components/app/results";
+import { FinishReport, ProjectActions } from "@/components/app/results";
 import { StatusBadge } from "@/components/app/dashboard-ui";
 import { PROJECTS, SAMPLE_BRIEF } from "@/lib/mock-data";
 
@@ -11,13 +11,13 @@ export default async function ProjectPage({
 }) {
   const { id } = await params;
   const project = PROJECTS.find((p) => p.id === id);
-  const name = project?.name ?? "Synthesized brief";
+  const name = project?.name ?? "Finish report";
 
   return (
     <>
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-muted transition-colors hover:text-ink print:hidden"
+        className="inline-flex items-center gap-1.5 text-[0.85rem] text-muted transition-colors hover:text-ink print:hidden"
       >
         <ArrowLeft className="size-3.5" /> All boards
       </Link>
@@ -33,14 +33,18 @@ export default async function ProjectPage({
           <p className="mt-1 text-[0.92rem] text-muted">
             {project?.client && project.client !== "—"
               ? `Client · ${project.client}`
-              : "Synthesized from the client's swipes and showdown"}
+              : "Built from your client's swipes and showdown"}
           </p>
         </div>
         <ProjectActions projectId={id} />
       </header>
 
       <div className="mt-8">
-        <BentoResults brief={SAMPLE_BRIEF} />
+        <FinishReport
+          brief={SAMPLE_BRIEF}
+          project={name}
+          client={project?.client}
+        />
       </div>
     </>
   );

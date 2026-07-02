@@ -1,4 +1,4 @@
-/** ATELO domain types — see PRODUCT.md for the funnel these model. */
+/** ATELO domain types — finish selection, see PRODUCT.md. */
 
 export type ProjectStatus =
   | "draft"
@@ -7,22 +7,28 @@ export type ProjectStatus =
   | "synthesizing"
   | "ready";
 
+/** Photo categories show images; swatch categories show colour fields. */
+export type CategoryKind = "photo" | "swatch";
+
 export type Category = {
   id: string;
   name: string;
-  /** number of precedents the architect loaded into this category */
+  kind: CategoryKind;
+  /** number of options the designer loaded */
   count: number;
 };
 
 export type Precedent = {
   id: string;
-  title: string;
   categoryId: string;
-  /** image url */
-  src: string;
-  /** short technical caption, e.g. "CLT + glulam · exposed" */
+  title: string;
+  /** short finish spec, e.g. "Honed marble · soft veining" */
   meta: string;
-  location?: string;
+  kind: CategoryKind;
+  /** photo url (kind: photo) */
+  src?: string;
+  /** hex colour (kind: swatch) */
+  color?: string;
 };
 
 export type Project = {
@@ -30,24 +36,30 @@ export type Project = {
   name: string;
   client: string;
   status: ProjectStatus;
-  /** absolute, human-readable last-touched label */
   updated: string;
   categories: Category[];
   /** 0..1 — how far the client has moved through the deck */
   swipeProgress: number;
 };
 
-export type Material = { name: string; pct: number };
-
 export type PaletteSwatch = { name: string; hex: string };
 
-/** The structured brief the AI returns (Gemini native JSON). */
+/** One resolved pick per category — the heart of the client report. */
+export type Selection = {
+  category: string;
+  title: string;
+  kind: CategoryKind;
+  src?: string;
+  color?: string;
+  note: string;
+};
+
+/** The client-ready finish report (results, not process). */
 export type Brief = {
   style: string;
   confidence: number;
   summary: string;
-  materials: Material[];
   palette: PaletteSwatch[];
-  themes: string[];
-  winners: Precedent[];
+  selections: Selection[];
+  notes: string[];
 };

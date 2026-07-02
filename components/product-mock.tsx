@@ -1,241 +1,468 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useState } from "react";
-import { Plus, X, Heart } from "lucide-react";
-import { precedentsByCategory, SAMPLE_BRIEF } from "@/lib/mock-data";
+import { ArrowRight, Check, Copy, Heart, Plus, Send, X } from "lucide-react";
+import { SAMPLE_BRIEF, TEST_DECK } from "@/lib/mock-data";
 import type { Precedent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Dot, Tag } from "@/components/ui";
 
-const DECK = precedentsByCategory("exterior");
-const VERDICTS = ["PIN", "LIKE", "PASS", "LIKE"] as const;
+const EASE = [0.16, 1, 0.3, 1] as const;
+const SCENES = ["Set up", "Client swipes", "Report"] as const;
 
-function DeckCard({
-  p,
-  muted = false,
-  badge,
-}: {
-  p: Precedent;
-  muted?: boolean;
-  badge?: (typeof VERDICTS)[number];
-}) {
-  return (
-    <div className="relative h-full w-full overflow-hidden rounded-[18px] border border-ink-line bg-ink-surface">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={p.src}
-        alt={p.title}
-        className="h-full w-full object-cover"
-        draggable={false}
-      />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/5" />
-      {badge && !muted && (
-        <div
-          className={cn(
-            "absolute left-4 top-4 rounded-full border px-3 py-1 font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] backdrop-blur-sm",
-            badge === "PASS"
-              ? "border-white/40 text-white/90"
-              : badge === "PIN"
-                ? "border-accent bg-accent text-[var(--color-on-accent)]"
-                : "border-white/70 text-white",
-          )}
-        >
-          {badge}
-        </div>
-      )}
-      <div className="absolute inset-x-0 bottom-0 p-4">
-        <div className="text-[0.98rem] font-medium leading-tight text-white">
-          {p.title}
-        </div>
-        <div className="mt-1 flex items-center justify-between">
-          <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-white/70">
-            {p.meta}
-          </span>
-          <span className="font-mono text-[0.62rem] tracking-[0.1em] text-white/50">
-            {p.location}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
+function useMounted() {
+  const [m, setM] = useState(false);
+  useEffect(() => setM(true), []);
+  return m;
 }
 
-/** Animated hero visual: a self-advancing swipe deck in the dark "toad" world. */
-export function SwipeDeckMock({ className }: { className?: string }) {
-  const reduce = useReducedMotion();
-  const [i, setI] = useState(0);
-
-  useEffect(() => {
-    if (reduce) return;
-    const id = setInterval(() => setI((v) => v + 1), 2900);
-    return () => clearInterval(id);
-  }, [reduce]);
-
-  const stack = [0, 1, 2].map((o) => DECK[(i + o) % DECK.length]);
-  const verdict = VERDICTS[i % VERDICTS.length];
-  const dir = verdict === "PASS" ? -1 : 1;
-
-  return (
-    <div
-      className={cn(
-        "w-full max-w-[380px] rounded-[26px] border border-ink-line bg-ink-bg p-3 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.55)]",
-        className,
-      )}
-    >
-      {/* device top bar */}
-      <div className="flex items-center justify-between px-1 pb-3 pt-1">
-        <Tag dark className="text-ink-muted">
-          <Dot className="size-[0.4rem]" /> EXTERIOR MASSING
-        </Tag>
-        <span className="font-mono text-[0.66rem] tracking-[0.1em] text-ink-muted tnum">
-          {String((i % DECK.length) + 1).padStart(2, "0")} / 24
-        </span>
-      </div>
-
-      {/* card stack */}
-      <div className="relative aspect-[3/4] w-full">
-        {[2, 1].map((o) => {
-          const p = stack[o];
-          return (
-            <div
-              key={`${p.id}-${o}`}
-              className="absolute inset-0"
-              style={{
-                transform: `translateY(${o * 12}px) scale(${1 - o * 0.05})`,
-                opacity: o === 2 ? 0.45 : 0.8,
-                zIndex: 3 - o,
-              }}
-            >
-              <DeckCard p={p} muted />
-            </div>
-          );
-        })}
-
-        <AnimatePresence initial={false} custom={dir}>
-          <motion.div
-            key={stack[0].id}
-            className="absolute inset-0"
-            style={{ zIndex: 4 }}
-            initial={reduce ? false : { scale: 0.95, y: -12, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1, rotate: 0, x: 0 }}
-            exit={
-              reduce
-                ? { opacity: 0 }
-                : { x: dir * 460, rotate: dir * 15, opacity: 0 }
-            }
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <DeckCard p={stack[0]} badge={verdict} />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* actions */}
-      <div className="flex items-center justify-center gap-4 pb-1 pt-4">
-        <ActionButton active={verdict === "PASS"} kind="pass">
-          <X className="size-4" strokeWidth={2.2} />
-        </ActionButton>
-        <ActionButton active={verdict === "PIN"} kind="pin" large>
-          <Plus className="size-5" strokeWidth={2.4} />
-        </ActionButton>
-        <ActionButton active={verdict === "LIKE"} kind="like">
-          <Heart className="size-4" strokeWidth={2.2} />
-        </ActionButton>
-      </div>
-    </div>
-  );
-}
-
-function ActionButton({
-  children,
-  active,
-  kind,
-  large = false,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  kind: "pass" | "pin" | "like";
-  large?: boolean;
-}) {
-  const isPin = kind === "pin";
+/* -------------------------------------------------- avatars (no assets) */
+function Avatar({ label, tone }: { label: string; tone: string }) {
   return (
     <span
-      className={cn(
-        "grid place-items-center rounded-full border transition-all duration-300",
-        large ? "size-14" : "size-11",
-        isPin
-          ? active
-            ? "scale-110 border-accent bg-accent text-[var(--color-on-accent)]"
-            : "border-accent/60 text-accent"
-          : active
-            ? "border-white/80 bg-white/10 text-white"
-            : "border-ink-line text-ink-muted",
-      )}
+      className="grid size-6 place-items-center rounded-full text-[0.6rem] font-medium text-white ring-2 ring-surface"
+      style={{ background: tone }}
     >
-      {children}
+      {label}
     </span>
   );
 }
 
-/** The payoff: a synthesized brief card (light world). */
-export function BriefPreview({ className }: { className?: string }) {
-  const b = SAMPLE_BRIEF;
-  const top = b.materials.slice(0, 4);
+/* -------------------------------------------------------- Scene: set up */
+function SetupScene() {
+  const chips = ["Exterior Colour", "Countertops", "Lighting", "Tile & Stone", "Fixtures"];
   return (
-    <div
-      className={cn(
-        "w-full max-w-[420px] rounded-[18px] border border-line bg-surface p-6",
-        className,
-      )}
-    >
-      <div className="flex items-center justify-between">
-        <Tag dot>SYNTHESIZED BRIEF</Tag>
-        <span className="font-mono text-[0.7rem] tracking-[0.08em] text-accent tnum">
-          {Math.round(b.confidence * 100)}% CONFIDENCE
-        </span>
+    <div className="grid h-full grid-cols-[1fr] gap-4 p-5 sm:grid-cols-[0.9fr_1.1fr] sm:p-7">
+      <div className="hidden flex-col justify-between rounded-2xl bg-surface-2 p-5 sm:flex">
+        <div className="space-y-3">
+          <div className="h-2.5 w-16 rounded-full bg-ink/10" />
+          <div className="h-2.5 w-24 rounded-full bg-ink/10" />
+          <div className="h-2.5 w-20 rounded-full bg-ink/10" />
+        </div>
+        <div className="rounded-xl bg-surface p-3 shadow-soft">
+          <div className="text-[0.62rem] uppercase tracking-[0.12em] text-muted">Credits</div>
+          <div className="mt-1 text-xl font-semibold">3</div>
+        </div>
       </div>
 
-      <h3 className="mt-4 text-[1.5rem] font-semibold leading-[1.05] tracking-[-0.02em]">
-        {b.style}
-      </h3>
+      <div className="flex flex-col justify-center">
+        <div className="text-[0.7rem] uppercase tracking-[0.14em] text-muted">New project</div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE, delay: 0.05 }}
+          className="mt-2 flex items-center rounded-xl border border-line bg-surface px-4 py-3 text-[1.05rem] font-medium"
+        >
+          Kerrisdale Kitchen
+          <motion.span
+            className="ml-0.5 inline-block h-5 w-px bg-accent"
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ repeat: Infinity, duration: 1.1 }}
+          />
+        </motion.div>
 
-      <div className="mt-5 space-y-2.5">
-        {top.map((m, idx) => (
-          <div key={m.name} className="flex items-center gap-3">
-            <span className="w-40 shrink-0 truncate text-[0.82rem] text-ink">
-              {m.name}
-            </span>
-            <span className="relative h-[6px] flex-1 overflow-hidden rounded-full bg-ink/[0.07]">
-              <span
-                className={cn(
-                  "absolute inset-y-0 left-0 rounded-full",
-                  idx === 0 ? "bg-accent" : "bg-ink/70",
-                )}
-                style={{ width: `${m.pct}%` }}
-              />
-            </span>
-            <span className="w-9 text-right font-mono text-[0.72rem] text-muted tnum">
-              {m.pct}%
-            </span>
+        <div className="mt-5 text-[0.7rem] uppercase tracking-[0.14em] text-muted">Categories</div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {chips.map((c, i) => (
+            <motion.span
+              key={c}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: EASE, delay: 0.15 + i * 0.08 }}
+              className="rounded-full border border-line bg-surface px-3 py-1.5 text-[0.8rem]"
+            >
+              {c}
+            </motion.span>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+          className="mt-6 flex items-center gap-2 rounded-full border border-line bg-surface-2 p-1.5 pl-4"
+        >
+          <span className="flex-1 truncate text-[0.82rem] text-muted">
+            atelo.studio/c/kerrisdale-kitchen
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-[0.78rem] font-medium text-white">
+            <Copy className="size-3.5" /> Copy link
+          </span>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------- Scene: swipe */
+function SwipeScene() {
+  const card = TEST_DECK.length ? null : null; // exterior colour is swatch; use a photo here
+  return (
+    <div className="relative flex h-full items-center justify-center p-5">
+      <div className="relative w-[230px]">
+        <div className="absolute inset-0 translate-y-3 scale-95 rounded-[20px] bg-surface-2 shadow-soft" />
+        <motion.div
+          initial={{ opacity: 0, y: 12, rotate: -2 }}
+          animate={{ opacity: 1, y: 0, rotate: 0 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-float"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=600&q=80"
+            alt="Honed marble countertop"
+            className="h-[240px] w-full object-cover"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7, rotate: -12 }}
+            animate={{ opacity: 1, scale: 1, rotate: -8 }}
+            transition={{ delay: 0.5, duration: 0.4, ease: EASE }}
+            className="absolute right-3 top-3 rounded-lg border-2 border-accent px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-accent"
+          >
+            Like
+          </motion.div>
+          <div className="p-3.5">
+            <div className="text-[0.92rem] font-semibold">Honed Carrara</div>
+            <div className="text-[0.75rem] text-muted">Marble · soft matte</div>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-3">
+        <span className="grid size-9 place-items-center rounded-full border border-line bg-surface text-muted">
+          <X className="size-4" />
+        </span>
+        <span className="grid size-11 place-items-center rounded-full bg-accent text-white shadow-soft">
+          <Plus className="size-5" />
+        </span>
+        <span className="grid size-9 place-items-center rounded-full border border-line bg-surface text-muted">
+          <Heart className="size-4" />
+        </span>
+      </div>
+      <div className="absolute right-5 top-5 rounded-full border border-line bg-surface px-3 py-1 text-[0.72rem] text-muted tnum">
+        14 liked · 5 pinned
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------ Scene: report */
+function ReportScene() {
+  const b = SAMPLE_BRIEF;
+  return (
+    <div className="flex h-full flex-col justify-center p-5 sm:p-7">
+      <div className="flex items-center justify-between">
+        <div className="text-[0.7rem] uppercase tracking-[0.14em] text-muted">
+          Finish report · Kerrisdale Kitchen
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-[0.66rem] font-medium text-white">
+          <Check className="size-3" /> Ready
+        </span>
+      </div>
+      <div className="mt-3 text-[1.7rem] font-semibold tracking-[-0.02em]">{b.style}</div>
+      <div className="mt-3 flex items-center gap-1.5">
+        {b.palette.map((c) => (
+          <span
+            key={c.name}
+            className="size-6 rounded-full ring-1 ring-line"
+            style={{ background: c.hex }}
+          />
+        ))}
+        <span className="ml-2 text-[0.78rem] text-muted">{Math.round(b.confidence * 100)}% aligned</span>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {b.selections.filter((s) => s.kind === "photo").slice(0, 3).map((s) => (
+          <div key={s.category} className="overflow-hidden rounded-xl border border-line bg-surface">
+            <div className="aspect-[4/3] overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.src} alt={s.title} className="h-full w-full object-cover" />
+            </div>
+            <div className="p-2">
+              <div className="truncate text-[0.72rem] font-medium">{s.title}</div>
+              <div className="truncate text-[0.62rem] text-muted">{s.category}</div>
+            </div>
           </div>
         ))}
       </div>
+      <div className="mt-4 flex justify-end">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[0.78rem] font-medium text-white">
+          <Send className="size-3.5" /> Send to client
+        </span>
+      </div>
+    </div>
+  );
+}
 
-      <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
-        <div className="flex items-center gap-2">
-          {b.palette.map((c) => (
+const SCENE_COMPONENTS = [SetupScene, SwipeScene, ReportScene];
+
+/** The bright animated app-flow canvas — the hero centerpiece (Chronicle style). */
+export function HeroCanvas() {
+  const mounted = useMounted();
+  const reduce = useReducedMotion() ?? false;
+  const [scene, setScene] = useState(0);
+
+  useEffect(() => {
+    if (!mounted || reduce) return;
+    const id = setInterval(() => setScene((s) => (s + 1) % SCENE_COMPONENTS.length), 3600);
+    return () => clearInterval(id);
+  }, [mounted, reduce]);
+
+  const Scene = SCENE_COMPONENTS[scene];
+
+  return (
+    <div className="w-full">
+      <div className="overflow-hidden rounded-[26px] border border-line bg-surface shadow-float">
+        {/* top bar */}
+        <div className="flex items-center justify-between border-b border-line bg-surface-2/60 px-4 py-3">
+          <div className="flex items-center gap-2 text-[0.78rem] font-medium">
+            <span className="size-2 rounded-full bg-accent" />
+            Atelo
+            <span className="text-faint">/</span>
+            <span className="text-muted">Kerrisdale Kitchen</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-1.5">
+              <Avatar label="L" tone="#B26B47" />
+              <Avatar label="A" tone="#26241F" />
+              <Avatar label="M" tone="#8C9184" />
+            </div>
+            <span className="hidden rounded-full border border-line px-3 py-1 text-[0.72rem] text-muted sm:inline">
+              Share
+            </span>
+          </div>
+        </div>
+
+        {/* scene stage */}
+        <div className="relative h-[360px] sm:h-[400px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={scene}
+              className="absolute inset-0"
+              initial={mounted && !reduce ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0 }}
+              transition={{ duration: 0.35, ease: EASE }}
+            >
+              <Scene />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* scene tabs */}
+      <div className="mt-4 flex items-center justify-center gap-2">
+        {SCENES.map((label, i) => (
+          <button
+            key={label}
+            onClick={() => setScene(i)}
+            className={cn(
+              "group flex items-center gap-2 rounded-full px-3.5 py-2 text-[0.8rem] transition-colors",
+              scene === i ? "bg-ink text-white" : "text-muted hover:text-ink",
+            )}
+          >
             <span
-              key={c.name}
-              title={`${c.name} ${c.hex}`}
-              className="size-5 rounded-full border border-line"
-              style={{ backgroundColor: c.hex }}
-            />
+              className={cn(
+                "grid size-4 place-items-center rounded-full text-[0.6rem] font-semibold",
+                scene === i ? "bg-white/20" : "bg-ink/8 text-muted",
+              )}
+            >
+              {i + 1}
+            </span>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------- interactive test card */
+function SwatchFace({ p }: { p: Precedent }) {
+  return (
+    <div className="relative h-full w-full select-none overflow-hidden rounded-[20px] border border-line">
+      <div className="h-full w-full" style={{ background: p.color }} />
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 to-transparent p-4">
+        <div className="text-[1.05rem] font-semibold text-white">{p.title}</div>
+        <div className="text-[0.75rem] text-white/80">{p.meta}</div>
+      </div>
+    </div>
+  );
+}
+
+/** "Try it" — a real, swipeable deck of exterior colour swatches on the landing. */
+export function TestSwipe() {
+  const mounted = useMounted();
+  const reduce = useReducedMotion() ?? false;
+  const interactive = mounted && !reduce;
+  const [i, setI] = useState(0);
+  const [liked, setLiked] = useState(0);
+  const [dir, setDir] = useState(1);
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-12, 12]);
+  const likeOp = useTransform(x, [20, 120], [0, 1]);
+  const nopeOp = useTransform(x, [-120, -20], [1, 0]);
+
+  const deck = TEST_DECK;
+  const done = i >= deck.length;
+
+  function go(like: boolean) {
+    setDir(like ? 1 : -1);
+    if (like) setLiked((n) => n + 1);
+    x.set(0);
+    setI((n) => n + 1);
+  }
+  function reset() {
+    setI(0);
+    setLiked(0);
+    x.set(0);
+  }
+
+  return (
+    <div className="mx-auto flex w-full max-w-[300px] flex-col items-center">
+      <div className="relative aspect-[3/4] w-full">
+        {!done && deck[i + 1] && (
+          <div className="absolute inset-0 translate-y-2.5 scale-[0.96] opacity-60">
+            <SwatchFace p={deck[i + 1]} />
+          </div>
+        )}
+        <AnimatePresence custom={dir}>
+          {!done ? (
+            <motion.div
+              key={deck[i].id}
+              className={cn("absolute inset-0", interactive && "cursor-grab active:cursor-grabbing")}
+              style={interactive ? { x, rotate } : undefined}
+              drag={interactive ? "x" : false}
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              dragElastic={0.7}
+              onDragEnd={(_, info) => {
+                if (info.offset.x > 100) go(true);
+                else if (info.offset.x < -100) go(false);
+              }}
+              initial={mounted ? { scale: 0.96, opacity: 0 } : false}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={interactive ? { x: dir * 380, opacity: 0, rotate: dir * 16 } : { opacity: 0 }}
+              transition={{ duration: 0.32, ease: EASE }}
+            >
+              <SwatchFace p={deck[i]} />
+              {interactive && (
+                <>
+                  <motion.span
+                    style={{ opacity: likeOp }}
+                    className="pointer-events-none absolute right-4 top-4 rounded-lg border-2 border-white px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white"
+                  >
+                    Love
+                  </motion.span>
+                  <motion.span
+                    style={{ opacity: nopeOp }}
+                    className="pointer-events-none absolute left-4 top-4 rounded-lg border-2 border-white/80 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white/90"
+                  >
+                    Pass
+                  </motion.span>
+                </>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="done"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] border border-line bg-surface text-center"
+            >
+              <div className="grid size-12 place-items-center rounded-full bg-accent/12 text-accent">
+                <Check className="size-6" />
+              </div>
+              <div className="text-[1.05rem] font-semibold">You loved {liked} of {deck.length}</div>
+              <div className="max-w-[22ch] text-[0.85rem] text-muted">
+                That&apos;s all it takes. Your client does this in five minutes.
+              </div>
+              <button
+                onClick={reset}
+                className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-[0.82rem] font-medium transition-colors hover:border-ink/30"
+              >
+                Try again
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {!done && (
+        <div className="mt-5 flex items-center gap-4">
+          <button
+            onClick={() => go(false)}
+            aria-label="Pass"
+            className="grid size-12 place-items-center rounded-full border border-line bg-surface text-muted transition-all hover:border-ink/30 active:scale-90"
+          >
+            <X className="size-5" />
+          </button>
+          <button
+            onClick={() => go(true)}
+            aria-label="Love"
+            className="grid size-14 place-items-center rounded-full bg-accent text-white shadow-soft transition-all hover:bg-accent-press active:scale-90"
+          >
+            <Heart className="size-6" />
+          </button>
+        </div>
+      )}
+      <p className="mt-4 text-center text-[0.8rem] text-muted">
+        {done ? "Nice taste." : "Drag the card, or tap — this is the whole client experience."}
+      </p>
+    </div>
+  );
+}
+
+/** Compact export-ready report used on the landing (mirrors the dashboard report). */
+export function ReportPreview() {
+  const b = SAMPLE_BRIEF;
+  return (
+    <div className="overflow-hidden rounded-[22px] border border-line bg-surface shadow-float">
+      <div className="flex items-center justify-between border-b border-line px-6 py-4">
+        <div className="flex items-center gap-2 text-[0.85rem] font-medium">
+          <span className="size-2 rounded-full bg-accent" /> Finish Report
+        </div>
+        <span className="text-[0.72rem] text-muted">Kerrisdale Kitchen · for The Laurents</span>
+      </div>
+      <div className="grid gap-6 p-6 sm:grid-cols-[1.1fr_1fr]">
+        <div>
+          <div className="text-[0.72rem] uppercase tracking-[0.14em] text-muted">Direction</div>
+          <div className="mt-1 text-[1.9rem] font-semibold tracking-[-0.02em]">{b.style}</div>
+          <p className="mt-3 text-[0.92rem] leading-relaxed text-muted">{b.summary}</p>
+          <div className="mt-5 flex items-center gap-2">
+            {b.palette.map((c) => (
+              <div key={c.name} className="flex flex-col items-center gap-1">
+                <span className="size-8 rounded-full ring-1 ring-line" style={{ background: c.hex }} />
+                <span className="text-[0.6rem] text-muted">{c.name.split(" ")[0]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-2.5">
+          <div className="text-[0.72rem] uppercase tracking-[0.14em] text-muted">Selected finishes</div>
+          {b.selections.map((s) => (
+            <div key={s.category} className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-2.5">
+              {s.kind === "swatch" ? (
+                <span className="size-10 shrink-0 rounded-lg" style={{ background: s.color }} />
+              ) : (
+                <span className="size-10 shrink-0 overflow-hidden rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={s.src} alt={s.title} className="h-full w-full object-cover" />
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[0.85rem] font-medium">{s.title}</div>
+                <div className="truncate text-[0.72rem] text-muted">{s.category}</div>
+              </div>
+              <span className="text-[0.7rem] text-faint">{s.note}</span>
+            </div>
           ))}
         </div>
-        <span className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
-          5 materials · 5 tones
-        </span>
       </div>
     </div>
   );

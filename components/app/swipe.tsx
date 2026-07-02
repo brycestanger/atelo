@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { X, Plus, Heart, ArrowRight, Check } from "lucide-react";
 import type { Precedent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Button, Dot, Tag } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 type Verdict = "like" | "pass" | "pin";
 
@@ -25,46 +25,46 @@ function Card({
   x?: MotionValue<number>;
   interactive?: boolean;
 }) {
-  // Hooks run unconditionally; a local fallback keeps the peek card valid.
   const local = useMotionValue(0);
   const mx = x ?? local;
   const likeOp = useTransform(mx, [30, 140], [0, 1]);
   const passOp = useTransform(mx, [-140, -30], [1, 0]);
 
   return (
-    <div className="relative h-full w-full select-none overflow-hidden rounded-[22px] border border-ink-line bg-ink-surface">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={p.src}
-        alt={p.title}
-        className="h-full w-full object-cover"
-        draggable={false}
-      />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+    <div className="relative h-full w-full select-none overflow-hidden rounded-[24px] border border-line bg-surface shadow-float">
+      {p.kind === "swatch" ? (
+        <div className="h-full w-full" style={{ background: p.color }} />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={p.src}
+          alt={p.title}
+          className="h-full w-full object-cover"
+          draggable={false}
+        />
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
       {interactive && (
         <>
           <motion.div
             style={{ opacity: likeOp }}
-            className="pointer-events-none absolute right-5 top-5 rounded-lg border-2 border-accent px-3 py-1 font-mono text-sm font-bold uppercase tracking-wider text-accent"
+            className="pointer-events-none absolute right-5 top-5 rounded-lg border-2 border-white px-3 py-1 text-sm font-bold uppercase tracking-wider text-white"
           >
-            Like
+            Love
           </motion.div>
           <motion.div
             style={{ opacity: passOp }}
-            className="pointer-events-none absolute left-5 top-5 rounded-lg border-2 border-white/80 px-3 py-1 font-mono text-sm font-bold uppercase tracking-wider text-white"
+            className="pointer-events-none absolute left-5 top-5 rounded-lg border-2 border-white/80 px-3 py-1 text-sm font-bold uppercase tracking-wider text-white/90"
           >
             Pass
           </motion.div>
         </>
       )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5">
-        <div className="text-[1.15rem] font-semibold leading-tight text-white">
+        <div className="text-[1.2rem] font-semibold leading-tight text-white">
           {p.title}
         </div>
-        <div className="mt-1 flex items-center justify-between font-mono text-[0.64rem] uppercase tracking-[0.1em] text-white/70">
-          <span>{p.meta}</span>
-          <span>{p.location}</span>
-        </div>
+        <div className="mt-0.5 text-[0.82rem] text-white/80">{p.meta}</div>
       </div>
     </div>
   );
@@ -88,11 +88,11 @@ function ActionBtn({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        "grid place-items-center rounded-full border transition-all duration-200 active:scale-90",
+        "grid place-items-center rounded-full transition-all duration-200 active:scale-90",
         large ? "size-16" : "size-13",
         variant === "accent"
-          ? "border-accent bg-accent text-[var(--color-on-accent)] hover:bg-accent-press"
-          : "border-ink-line text-ink-text hover:border-white/50 hover:bg-white/5",
+          ? "bg-accent text-white shadow-soft hover:bg-accent-press"
+          : "border border-line bg-surface text-muted hover:border-ink/30 hover:text-ink",
       )}
     >
       {children}
@@ -113,15 +113,15 @@ function DeckComplete({
 }) {
   return (
     <div className="flex w-full max-w-[420px] flex-col items-center text-center">
-      <div className="grid size-16 place-items-center rounded-full border border-accent text-accent">
+      <div className="grid size-16 place-items-center rounded-full bg-accent/12 text-accent">
         <Check className="size-7" strokeWidth={2} />
       </div>
       <h2 className="mt-6 text-2xl font-semibold tracking-[-0.02em]">
         {categoryName} — done
       </h2>
-      <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">
-        You pinned <span className="text-ink-text">{pins}</span> and liked{" "}
-        <span className="text-ink-text">{likes}</span>.{" "}
+      <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">
+        You loved <span className="text-ink">{likes}</span> and pinned{" "}
+        <span className="text-ink">{pins}</span>.{" "}
         {pins > 1 ? "Now pick a winner." : "Nicely done."}
       </p>
       <Button href={nextHref} variant="accent" size="lg" className="mt-8">
@@ -142,7 +142,6 @@ export function SwipeDeck({
   nextHref: string;
 }) {
   const prefersReduced = useReducedMotion() ?? false;
-  // Gate interactivity behind mount so SSR and first client render match.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const interactive = mounted && !prefersReduced;
@@ -181,26 +180,25 @@ export function SwipeDeck({
   }
 
   return (
-    <div className="flex w-full max-w-[420px] flex-col">
+    <div className="flex w-full max-w-[400px] flex-col">
       <div className="flex items-center justify-between">
-        <Tag dark className="text-ink-muted">
-          <Dot /> {categoryName}
-        </Tag>
-        <span className="font-mono text-[0.68rem] tracking-[0.1em] text-ink-muted tnum">
-          {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}{" "}
-          · {pins.length} pinned
+        <span className="inline-flex items-center gap-2 text-[0.85rem] font-medium">
+          <span className="size-2 rounded-full bg-accent" /> {categoryName}
+        </span>
+        <span className="text-[0.8rem] text-muted tnum">
+          {index + 1}/{total} · {pins.length} pinned
         </span>
       </div>
-      <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-ink/8">
         <span
           className="block h-full rounded-full bg-accent transition-[width] duration-300"
           style={{ width: `${(index / total) * 100}%` }}
         />
       </div>
 
-      <div className="relative mt-5 aspect-[3/4.15] w-full">
+      <div className="relative mt-5 aspect-[3/4.1] w-full">
         {peek && (
-          <div className="absolute inset-0 translate-y-3 scale-[0.95] opacity-50">
+          <div className="absolute inset-0 translate-y-3 scale-[0.95] opacity-60">
             <Card p={peek} />
           </div>
         )}
@@ -244,12 +242,12 @@ export function SwipeDeck({
         <ActionBtn onClick={() => advance("pin")} variant="accent" large label="Pin">
           <Plus className="size-6" strokeWidth={2.4} />
         </ActionBtn>
-        <ActionBtn onClick={() => advance("like")} label="Like">
+        <ActionBtn onClick={() => advance("like")} label="Love">
           <Heart className="size-5" strokeWidth={2.2} />
         </ActionBtn>
       </div>
-      <p className="mt-4 text-center font-mono text-[0.64rem] uppercase tracking-[0.12em] text-ink-muted">
-        Drag or tap · right likes · left passes · + pins
+      <p className="mt-4 text-center text-[0.82rem] text-muted">
+        Drag or tap · right loves · left passes · + pins a favourite
       </p>
     </div>
   );

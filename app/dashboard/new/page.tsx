@@ -7,8 +7,10 @@ import { Button, Tag } from "@/components/ui";
 import { PRECEDENTS } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-const STEP_LABELS = ["Project", "Categories", "Precedents", "Share"];
-const THUMBS = PRECEDENTS.slice(0, 6).map((p) => p.src);
+const STEP_LABELS = ["Project", "Categories", "Options", "Share"];
+const THUMBS = PRECEDENTS.filter((p) => p.kind === "photo")
+  .slice(0, 6)
+  .map((p) => p.src as string);
 const inputCls =
   "h-11 w-full rounded-full border border-line bg-bg px-4 text-[0.92rem] outline-none transition-colors placeholder:text-faint focus:border-ink/40";
 
@@ -28,9 +30,11 @@ export default function NewBoardPage() {
   const [name, setName] = useState("");
   const [client, setClient] = useState("");
   const [cats, setCats] = useState<string[]>([
-    "Exterior Massing",
-    "Interior Finishes",
-    "Structural Detail",
+    "Exterior Colour",
+    "Countertops",
+    "Lighting",
+    "Tile & Stone",
+    "Fixtures",
   ]);
   const [draft, setDraft] = useState("");
   const [copied, setCopied] = useState(false);

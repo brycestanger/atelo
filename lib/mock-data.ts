@@ -7,94 +7,103 @@ export function img(id: string, w = 900) {
   return `${U}${id}?auto=format&fit=crop&w=${w}&q=80`;
 }
 
-/* Photo paths verified live from the Unsplash search DOM — they resolve. */
-const EXT = [
-  "photo-1715760374522-a609a0c2f65e",
-  "photo-1593503739294-e5dc3afa8835",
-  "photo-1754409410155-2079b647f00e",
-  "photo-1627227117979-941ae684786a",
-  "photo-1563874093519-ca5eda5cd776",
-  "photo-1515713519566-6f9bf3b4a07a",
-  "photo-1533541268314-af6680461b41",
-];
-const INT = [
-  "photo-1711873316332-acb6930211e1",
-  "photo-1646328410611-f28e81a96eb5",
-  "photo-1651342489644-be11c7ee318d",
-  "photo-1567016376408-0226e4d0c1ea",
-  "photo-1483366774565-c783b9f70e2c",
-  "photo-1542287343796-5bc81a6df440",
-  "photo-1520529890308-f503006340b4",
-];
-
+/* Photo paths verified live from Unsplash search results — they resolve. */
 export const CATEGORIES: Category[] = [
-  { id: "exterior", name: "Exterior Massing", count: 24 },
-  { id: "interior", name: "Interior Finishes", count: 31 },
-  { id: "structure", name: "Structural Detail", count: 18 },
+  { id: "exterior-colour", name: "Exterior Colour", kind: "swatch", count: 8 },
+  { id: "countertops", name: "Countertops", kind: "photo", count: 14 },
+  { id: "lighting", name: "Lighting", kind: "photo", count: 12 },
+  { id: "tile", name: "Tile & Stone", kind: "photo", count: 16 },
+  { id: "fixtures", name: "Fixtures", kind: "photo", count: 10 },
 ];
 
 export const PRECEDENTS: Precedent[] = [
-  { id: "e1", categoryId: "exterior", src: img(EXT[0]), title: "Stacked CLT volumes", meta: "CLT + glulam · exposed soffit", location: "Vancouver, BC" },
-  { id: "e2", categoryId: "exterior", src: img(EXT[1]), title: "Charred cedar rainscreen", meta: "Shou sugi ban · vertical batten", location: "Portland, OR" },
-  { id: "e3", categoryId: "exterior", src: img(EXT[2]), title: "Timber lattice canopy", meta: "Parametric glulam · daylight", location: "Oslo, NO" },
-  { id: "e4", categoryId: "exterior", src: img(EXT[3]), title: "Board-formed concrete base", meta: "Concrete + timber upper", location: "Kyoto, JP" },
-  { id: "e5", categoryId: "exterior", src: img(EXT[4]), title: "Cantilevered mass", meta: "Steel moment frame · timber clad", location: "Aspen, CO" },
-  { id: "e6", categoryId: "exterior", src: img(EXT[5]), title: "Gabled timber pavilion", meta: "Exposed ridge beam", location: "Bregenz, AT" },
-  { id: "e7", categoryId: "exterior", src: img(EXT[6]), title: "Slatted screen facade", meta: "Oak brise-soleil", location: "Melbourne, AU" },
+  // Exterior colour — swatches
+  { id: "x1", categoryId: "exterior-colour", kind: "swatch", color: "#3B3E43", title: "Charcoal Slate", meta: "Matte · fibre cement" },
+  { id: "x2", categoryId: "exterior-colour", kind: "swatch", color: "#8C9184", title: "Sage Stone", meta: "Textured render" },
+  { id: "x3", categoryId: "exterior-colour", kind: "swatch", color: "#B26B47", title: "Warm Clay", meta: "Lime render" },
+  { id: "x4", categoryId: "exterior-colour", kind: "swatch", color: "#E9E3D6", title: "Bone", meta: "Smooth stucco" },
+  { id: "x5", categoryId: "exterior-colour", kind: "swatch", color: "#33423B", title: "Deep Forest", meta: "Timber stain" },
+  { id: "x6", categoryId: "exterior-colour", kind: "swatch", color: "#4A4E54", title: "Graphite", meta: "Standing-seam metal" },
+  { id: "x7", categoryId: "exterior-colour", kind: "swatch", color: "#9E4B3B", title: "Oxide Red", meta: "Through-body brick" },
+  { id: "x8", categoryId: "exterior-colour", kind: "swatch", color: "#CBB99B", title: "Sand", meta: "Lime wash" },
 
-  { id: "i1", categoryId: "interior", src: img(INT[0]), title: "Travertine + oak kitchen", meta: "Warm minimal · monolithic island", location: "—" },
-  { id: "i2", categoryId: "interior", src: img(INT[1]), title: "Exposed soffit living", meta: "CLT ceiling · lime plaster", location: "—" },
-  { id: "i3", categoryId: "interior", src: img(INT[2]), title: "Plaster + timber threshold", meta: "Tadelakt · white oak", location: "—" },
-  { id: "i4", categoryId: "interior", src: img(INT[3]), title: "Sculptural stair void", meta: "Blackened steel · oak tread", location: "—" },
-  { id: "i5", categoryId: "interior", src: img(INT[4]), title: "Daylit gallery hall", meta: "Microcement · clerestory", location: "—" },
-  { id: "i6", categoryId: "interior", src: img(INT[5]), title: "Stone hearth wall", meta: "Split-face limestone", location: "—" },
-  { id: "i7", categoryId: "interior", src: img(INT[6]), title: "Joinery-wrapped study", meta: "Full-height rift oak", location: "—" },
+  // Countertops
+  { id: "co1", categoryId: "countertops", kind: "photo", src: img("photo-1541123437800-1bb1317badc2"), title: "Honed Carrara", meta: "Marble · soft matte" },
+  { id: "co2", categoryId: "countertops", kind: "photo", src: img("photo-1610276099118-c929abaaa80a"), title: "Calacatta Gold", meta: "Marble · polished" },
+  { id: "co3", categoryId: "countertops", kind: "photo", src: img("photo-1609766856939-5b5a934af3d5"), title: "Soapstone", meta: "Soft matte" },
+  { id: "co4", categoryId: "countertops", kind: "photo", src: img("photo-1611095210561-67f0832b1ca3"), title: "Leathered Granite", meta: "Textured black" },
+  { id: "co5", categoryId: "countertops", kind: "photo", src: img("photo-1616596612351-5a7ae04e2840"), title: "Quartz White", meta: "Engineered" },
+  { id: "co6", categoryId: "countertops", kind: "photo", src: img("photo-1543503103-f94a0036ed9d"), title: "Butcher Block", meta: "White oak" },
+
+  // Lighting
+  { id: "li1", categoryId: "lighting", kind: "photo", src: img("photo-1540932239986-30128078f3c5"), title: "Opal Globe", meta: "Pendant · warm" },
+  { id: "li2", categoryId: "lighting", kind: "photo", src: img("photo-1606170033648-5d55a3edf314"), title: "Brass Cone", meta: "Pendant · brass" },
+  { id: "li3", categoryId: "lighting", kind: "photo", src: img("photo-1537739670075-76f02633de02"), title: "Linear Bar", meta: "LED · dimmable" },
+  { id: "li4", categoryId: "lighting", kind: "photo", src: img("photo-1718221621618-e477ce33485a"), title: "Paper Lantern", meta: "Diffused glow" },
+  { id: "li5", categoryId: "lighting", kind: "photo", src: img("photo-1758612798971-a8adb6cba7eb"), title: "Sculptural", meta: "Statement piece" },
+
+  // Tile & Stone
+  { id: "ti1", categoryId: "tile", kind: "photo", src: img("photo-1575255597430-eba71bc85bc9"), title: "Zellige White", meta: "Handmade · gloss" },
+  { id: "ti2", categoryId: "tile", kind: "photo", src: img("photo-1614598632980-35ee54daa5b9"), title: "Terracotta", meta: "Matte clay" },
+  { id: "ti3", categoryId: "tile", kind: "photo", src: img("photo-1580398562556-d33329a0f29b"), title: "Marble Herringbone", meta: "Honed" },
+  { id: "ti4", categoryId: "tile", kind: "photo", src: img("photo-1615470144970-202c76387ba3"), title: "Encaustic", meta: "Patterned" },
+  { id: "ti5", categoryId: "tile", kind: "photo", src: img("photo-1550820946-1c6f7b8e2030"), title: "Micro-cement", meta: "Seamless matte" },
+
+  // Fixtures
+  { id: "fi1", categoryId: "fixtures", kind: "photo", src: img("photo-1542020186-c952a6c4045a"), title: "Matte Black Tap", meta: "Brassware" },
+  { id: "fi2", categoryId: "fixtures", kind: "photo", src: img("photo-1659455299116-af958bd906ab"), title: "Aged Brass", meta: "Warm mixer" },
+  { id: "fi3", categoryId: "fixtures", kind: "photo", src: img("photo-1542855368-ca6ea825bca2"), title: "Brushed Nickel", meta: "Soft sheen" },
+  { id: "fi4", categoryId: "fixtures", kind: "photo", src: img("photo-1613849925387-6e7f31f0cf40"), title: "Stone Basin", meta: "Vessel" },
+  { id: "fi5", categoryId: "fixtures", kind: "photo", src: img("photo-1623111771733-d3ab4d26ce41"), title: "Wall-mount", meta: "Minimal spout" },
 ];
 
 export function precedentsByCategory(categoryId: string): Precedent[] {
   return PRECEDENTS.filter((p) => p.categoryId === categoryId);
 }
 
+/** The little test deck on the landing page: exterior colour swatches. */
+export const TEST_DECK = precedentsByCategory("exterior-colour");
+
 export const PROJECTS: Project[] = [
   {
-    id: "harbourfront-residence",
-    name: "Harbourfront Residence",
-    client: "K. Merrin",
+    id: "kerrisdale-kitchen",
+    name: "Kerrisdale Kitchen",
+    client: "The Laurents",
     status: "ready",
     updated: "Ready · Jun 28",
     categories: CATEGORIES,
     swipeProgress: 1,
   },
   {
-    id: "gastown-loft",
-    name: "Gastown Loft Conversion",
-    client: "Foundry Dev Co.",
+    id: "west-end-refresh",
+    name: "West End Condo Refresh",
+    client: "M. Osei",
     status: "swiping",
     updated: "Client swiping · 2h ago",
-    categories: CATEGORIES.slice(0, 2),
-    swipeProgress: 0.58,
+    categories: CATEGORIES.slice(0, 4),
+    swipeProgress: 0.6,
   },
   {
-    id: "coastal-retreat",
-    name: "Coastal Mass-Timber Retreat",
-    client: "The Alderman Group",
+    id: "point-grey-build",
+    name: "Point Grey New Build",
+    client: "Harlow Group",
     status: "awaiting-client",
     updated: "Link sent · Jun 30",
     categories: CATEGORIES,
     swipeProgress: 0,
   },
   {
-    id: "mount-pleasant-studio",
-    name: "Mount Pleasant Studio",
-    client: "Rho & Partners",
+    id: "yaletown-loft",
+    name: "Yaletown Loft",
+    client: "K. Barnes",
     status: "synthesizing",
-    updated: "Synthesizing · just now",
-    categories: CATEGORIES.slice(0, 2),
+    updated: "Building report · just now",
+    categories: CATEGORIES.slice(0, 3),
     swipeProgress: 1,
   },
   {
-    id: "cambie-infill",
-    name: "Cambie Corridor Infill",
+    id: "dunbar-bathroom",
+    name: "Dunbar Bathroom",
     client: "—",
     status: "draft",
     updated: "Draft · Jun 24",
@@ -104,31 +113,28 @@ export const PROJECTS: Project[] = [
 ];
 
 export const SAMPLE_BRIEF: Brief = {
-  style: "Warm Tectonic Minimalism",
-  confidence: 0.92,
+  style: "Warm Contemporary",
+  confidence: 0.94,
   summary:
-    "The client consistently strikes toward exposed mass-timber structure softened by tactile, honest finishes. Massing is calm and orthogonal; warmth is carried by material, not ornament. Blackened metal appears as a precise accent, never a field.",
-  materials: [
-    { name: "Cross-laminated timber", pct: 38 },
-    { name: "Board-formed concrete", pct: 22 },
-    { name: "Travertine", pct: 14 },
-    { name: "Blackened steel", pct: 12 },
-    { name: "Rift white oak", pct: 9 },
-    { name: "Glass", pct: 5 },
-  ],
+    "Your client leans warm and tactile at every turn — a soft sage exterior, honed marble counters, aged-brass lighting, and matte-black fixtures. Nothing cold or high-gloss; each pick favours texture and warmth. This palette holds together across every room.",
   palette: [
-    { name: "Timber", hex: "#B8895A" },
-    { name: "Bone", hex: "#EDE8DF" },
-    { name: "Char", hex: "#211D1A" },
-    { name: "Signal", hex: "#FF4F00" },
-    { name: "Slate", hex: "#6B6F73" },
+    { name: "Sage Stone", hex: "#8C9184" },
+    { name: "Bone", hex: "#E9E3D6" },
+    { name: "Honed Marble", hex: "#D9D3C7" },
+    { name: "Aged Brass", hex: "#A9793F" },
+    { name: "Matte Black", hex: "#26241F" },
   ],
-  themes: [
-    "Exposed structure as ornament",
-    "Warm minimalism",
-    "Indoor–outdoor threshold",
-    "Craft-forward joinery",
-    "Daylight-driven massing",
+  selections: [
+    { category: "Exterior Colour", title: "Sage Stone", kind: "swatch", color: "#8C9184", note: "Textured render, low-sheen" },
+    { category: "Countertops", title: "Honed Carrara", kind: "photo", src: img("photo-1541123437800-1bb1317badc2"), note: "Matte marble, soft veining" },
+    { category: "Lighting", title: "Brass Cone Pendant", kind: "photo", src: img("photo-1606170033648-5d55a3edf314"), note: "Warm brass, dimmable" },
+    { category: "Tile & Stone", title: "Zellige White", kind: "photo", src: img("photo-1575255597430-eba71bc85bc9"), note: "Handmade gloss, backsplash" },
+    { category: "Fixtures", title: "Matte Black Tap", kind: "photo", src: img("photo-1542020186-c952a6c4045a"), note: "Brassware, matte finish" },
   ],
-  winners: [PRECEDENTS[0], PRECEDENTS[7], PRECEDENTS[10]],
+  notes: [
+    "Warm over cool at every turn",
+    "Texture preferred to high gloss",
+    "Metal accents: brass + matte black, never chrome",
+    "One palette that reads across all rooms",
+  ],
 };

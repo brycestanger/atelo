@@ -1,41 +1,43 @@
 import type { Metadata } from "next";
-import { Archivo } from "next/font/google";
-import { GeistMono } from "geist/font/mono";
+import { Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const archivo = Archivo({
+/* Fallback for ABC Diatype until licensed files are added to /public/fonts.
+   A clean, consumer grotesque — no monospace, no tech affect. */
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
-  variable: "--font-archivo",
+  variable: "--font-hanken",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://atelo.studio"),
   title: {
-    default: "ATELO — Signal over noise",
+    default: "ATELO — Choose the finishes, skip the guesswork",
     template: "%s — ATELO",
   },
   description:
-    "AI-synthesized design briefs from client swipes. Atelo replaces the Pinterest-board phase of client onboarding with a swiping experience that resolves taste into a structured architectural brief.",
+    "Atelo turns finish selection into a swipe. Send one link; your client picks colours, countertops, lighting and fixtures on their phone — and you get a client-ready finish report.",
   keywords: [
     "architecture",
-    "design brief",
-    "client onboarding",
-    "mass timber",
     "interior design",
-    "precedent study",
+    "finish selection",
+    "material selection",
+    "client onboarding",
+    "countertops",
+    "lighting",
   ],
   authors: [{ name: "Atelo" }],
   openGraph: {
-    title: "ATELO — Signal over noise",
-    description: "AI-synthesized design briefs from client swipes.",
+    title: "ATELO — Choose the finishes, skip the guesswork",
+    description: "Finish selection as a swipe. One link, a client-ready report.",
     type: "website",
     siteName: "Atelo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ATELO — Signal over noise",
-    description: "AI-synthesized design briefs from client swipes.",
+    title: "ATELO — Choose the finishes, skip the guesswork",
+    description: "Finish selection as a swipe. One link, a client-ready report.",
   },
 };
 
@@ -45,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={hanken.variable}>
       <body>{children}</body>
     </html>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Link2, Check } from "lucide-react";
 import type { Brief } from "@/lib/types";
-import { Button, Tag } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 export function ProjectActions({ projectId }: { projectId: string }) {
   const [copied, setCopied] = useState(false);
@@ -34,115 +34,123 @@ export function ProjectActions({ projectId }: { projectId: string }) {
   );
 }
 
-export function BentoResults({ brief }: { brief: Brief }) {
+/** The client-ready finish report — one document you can send as-is. */
+export function FinishReport({
+  brief,
+  project,
+  client,
+}: {
+  brief: Brief;
+  project: string;
+  client?: string;
+}) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-      {/* Dominant style — the headline finding */}
-      <article className="flex flex-col rounded-card border border-line bg-surface p-7 md:col-span-4 md:row-span-2">
-        <div className="flex items-center justify-between">
-          <Tag dot>DOMINANT STYLE</Tag>
-          <span className="font-mono text-[0.72rem] tracking-[0.06em] text-accent tnum">
-            {Math.round(brief.confidence * 100)}% confidence
-          </span>
+    <div className="overflow-hidden rounded-card border border-line bg-surface shadow-soft">
+      {/* letterhead */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-7 py-5">
+        <div>
+          <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
+            Finish Report
+          </div>
+          <div className="mt-0.5 text-[1.05rem] font-semibold">
+            {project}
+            {client && client !== "—" ? (
+              <span className="font-normal text-muted"> · for {client}</span>
+            ) : null}
+          </div>
         </div>
-        <h2 className="mt-4 text-[clamp(1.8rem,3.5vw,2.7rem)] font-semibold leading-[1.03] tracking-[-0.03em]">
-          {brief.style}
-        </h2>
-        <p className="mt-4 max-w-[56ch] text-[1rem] leading-relaxed text-muted">
-          {brief.summary}
-        </p>
-        <div className="mt-auto flex flex-wrap gap-2 pt-7">
-          {brief.themes.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-line px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted"
-            >
-              {t}
+        <div className="text-right">
+          <div className="flex items-center justify-end gap-1.5 text-[0.85rem] font-medium">
+            <span className="size-2 rounded-full bg-accent" /> Atelo
+          </div>
+          <div className="mt-0.5 text-[0.72rem] text-muted">Prepared June 2026</div>
+        </div>
+      </div>
+
+      {/* direction + palette */}
+      <div className="grid gap-8 border-b border-line p-7 sm:grid-cols-[1.2fr_1fr]">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
+              Direction
             </span>
-          ))}
+            <span className="text-[0.72rem] font-medium text-accent tnum">
+              {Math.round(brief.confidence * 100)}% aligned
+            </span>
+          </div>
+          <h2 className="mt-2 text-[clamp(1.9rem,3.5vw,2.7rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+            {brief.style}
+          </h2>
+          <p className="mt-4 max-w-[52ch] text-[1rem] leading-relaxed text-muted">
+            {brief.summary}
+          </p>
+          <ul className="mt-6 space-y-2">
+            {brief.notes.map((n) => (
+              <li key={n} className="flex items-start gap-2.5 text-[0.9rem]">
+                <span className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-accent" />
+                {n}
+              </li>
+            ))}
+          </ul>
         </div>
-      </article>
 
-      {/* Material mix */}
-      <article className="rounded-card border border-line bg-surface p-6 md:col-span-2 md:row-span-2">
-        <Tag dot>MATERIAL MIX</Tag>
-        <div className="mt-5 space-y-3.5">
-          {brief.materials.map((m, i) => (
-            <div key={m.name}>
-              <div className="flex items-center justify-between text-[0.82rem]">
-                <span>{m.name}</span>
-                <span className="font-mono text-muted tnum">{m.pct}%</span>
-              </div>
-              <div className="mt-1.5 h-[6px] overflow-hidden rounded-full bg-ink/[0.07]">
+        <div>
+          <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
+            Palette
+          </div>
+          <div className="mt-3 space-y-2">
+            {brief.palette.map((c) => (
+              <div
+                key={c.name}
+                className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-2.5"
+              >
                 <span
-                  className="block h-full rounded-full"
-                  style={{
-                    width: `${m.pct}%`,
-                    background:
-                      i === 0 ? "var(--color-accent)" : "var(--color-ink)",
-                  }}
+                  className="size-9 shrink-0 rounded-lg ring-1 ring-line"
+                  style={{ background: c.hex }}
                 />
+                <div className="flex flex-1 items-center justify-between">
+                  <span className="text-[0.88rem] font-medium">{c.name}</span>
+                  <span className="text-[0.72rem] uppercase text-muted">{c.hex}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </article>
+      </div>
 
-      {/* Palette */}
-      <article className="rounded-card border border-line bg-surface p-6 md:col-span-2">
-        <Tag dot>PALETTE</Tag>
-        <div className="mt-4 space-y-2.5">
-          {brief.palette.map((c) => (
-            <div key={c.name} className="flex items-center gap-3">
-              <span
-                className="size-7 shrink-0 rounded-md border border-line"
-                style={{ background: c.hex }}
-              />
-              <div className="flex flex-1 items-center justify-between">
-                <span className="text-[0.85rem]">{c.name}</span>
-                <span className="font-mono text-[0.68rem] uppercase text-muted">
-                  {c.hex}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </article>
-
-      {/* Ultimate winners */}
-      <article className="rounded-card border border-line bg-surface p-6 md:col-span-4">
+      {/* selected finishes */}
+      <div className="p-7">
         <div className="flex items-center justify-between">
-          <Tag dot>ULTIMATE WINNERS</Tag>
-          <span className="font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
-            1 per category
-          </span>
+          <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
+            Selected finishes
+          </div>
+          <div className="text-[0.72rem] text-muted">one winner per category</div>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          {brief.winners.map((w) => (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {brief.selections.map((s) => (
             <figure
-              key={w.id}
-              className="overflow-hidden rounded-lg border border-line bg-bg"
+              key={s.category}
+              className="overflow-hidden rounded-xl border border-line bg-surface"
             >
-              <div className="aspect-[4/5] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={w.src}
-                  alt={w.title}
-                  className="h-full w-full object-cover"
-                />
+              <div className="aspect-square overflow-hidden">
+                {s.kind === "swatch" ? (
+                  <div className="h-full w-full" style={{ background: s.color }} />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={s.src} alt={s.title} className="h-full w-full object-cover" />
+                )}
               </div>
               <figcaption className="p-3">
-                <div className="text-[0.82rem] font-medium leading-tight">
-                  {w.title}
+                <div className="text-[0.6rem] uppercase tracking-[0.1em] text-muted">
+                  {s.category}
                 </div>
-                <div className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-muted">
-                  {w.meta}
-                </div>
+                <div className="mt-0.5 truncate text-[0.85rem] font-medium">{s.title}</div>
+                <div className="mt-0.5 truncate text-[0.72rem] text-muted">{s.note}</div>
               </figcaption>
             </figure>
           ))}
         </div>
-      </article>
+      </div>
     </div>
   );
 }

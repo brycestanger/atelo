@@ -98,14 +98,14 @@ export function SiteFooter() {
           <div className="flex flex-col items-start gap-4 md:items-end">
             <p className="max-w-[34ch] text-[0.95rem] leading-relaxed text-ink-muted md:text-right">
               Your first board is free. Send it to a client tonight and read the
-              brief tomorrow.
+              finish report tomorrow.
             </p>
             <div className="flex items-center gap-3">
               <Button href="/dashboard" variant="accent" size="lg">
                 Create a board
                 <ArrowUpRight className="size-4" />
               </Button>
-              <Button href="/c/harbourfront-residence" variant="ghost-dark" size="lg">
+              <Button href="/c/kerrisdale-kitchen" variant="ghost-dark" size="lg">
                 See a client demo
               </Button>
             </div>
@@ -117,8 +117,8 @@ export function SiteFooter() {
           <div className="col-span-2 sm:col-span-3 md:col-span-2">
             <Wordmark dark />
             <p className="mt-4 max-w-[30ch] text-[0.9rem] leading-relaxed text-ink-muted">
-              Signal over noise. AI-synthesized design briefs from client swipes —
-              built for architects, interior designers, and mass-timber studios.
+              Finish selection as a swipe. One link, a client-ready report — built
+              for architects and interior designers.
             </p>
           </div>
           {FOOTER_COLS.map((col) => (

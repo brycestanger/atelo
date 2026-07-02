@@ -7,14 +7,12 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-ink-bg text-ink-text">
-      <header className="flex items-center justify-between border-b border-ink-line px-5 py-4">
+    <div className="min-h-screen bg-bg text-ink">
+      <header className="flex items-center justify-between border-b border-line bg-surface/70 px-5 py-4 backdrop-blur-sm">
         <Link href="/" aria-label="Atelo">
-          <Wordmark dark />
+          <Wordmark />
         </Link>
-        <span className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-ink-muted">
-          Powered by Atelo
-        </span>
+        <span className="text-[0.78rem] text-muted">Powered by Atelo</span>
       </header>
       {children}
     </div>

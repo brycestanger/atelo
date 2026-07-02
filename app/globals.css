@@ -1,38 +1,67 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ *
- * ATELO design tokens — see DESIGN.md
- * Near-neutral off-white (not warm cream), near-black ink, one loud
- * International Orange, and a separate dark "toad" world for the client.
+ * ABC Diatype (Dinamo) — the brand face, used for everything.
+ * It is a licensed font, so it cannot be committed. Drop your licensed
+ * files into /public/fonts and they activate automatically; until then
+ * the site falls back to a close grotesque (Hanken Grotesk) with no
+ * broken text and no build error.
+ * ------------------------------------------------------------------ */
+@font-face {
+  font-family: "ABC Diatype";
+  src: url("/fonts/ABCDiatype-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Diatype";
+  src: url("/fonts/ABCDiatype-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Diatype";
+  src: url("/fonts/ABCDiatype-Bold.woff2") format("woff2");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------ *
+ * ATELO tokens — bright, clean, consumer (Chronicle) with antinomy
+ * typographic restraint. White cards float on a soft light ground.
  * ------------------------------------------------------------------ */
 @theme {
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", "Liberation Mono", monospace;
+  --font-sans: "ABC Diatype", var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* mono repointed to the brand face — labels stay clean, never techy */
+  --font-mono: "ABC Diatype", var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
 
-  /* light world */
-  --color-bg: oklch(0.969 0.003 83);
-  --color-surface: oklch(0.988 0.002 83);
-  --color-ink: oklch(0.205 0.006 75);
-  --color-muted: oklch(0.452 0.008 75);
-  --color-faint: oklch(0.62 0.006 75);
-  --color-line: oklch(0.205 0.006 75 / 0.14);
-  --color-hairline: oklch(0.205 0.006 75 / 0.08);
+  --color-bg: oklch(0.971 0.003 95);
+  --color-surface: oklch(1 0 0);
+  --color-surface-2: oklch(0.981 0.002 95);
+  --color-ink: oklch(0.23 0.006 75);
+  --color-muted: oklch(0.48 0.008 75);
+  --color-faint: oklch(0.63 0.006 75);
+  --color-line: oklch(0.23 0.01 75 / 0.1);
+  --color-hairline: oklch(0.23 0.01 75 / 0.06);
 
   /* the pop */
   --color-accent: oklch(0.678 0.231 38);
   --color-accent-press: oklch(0.62 0.225 38);
-  --color-accent-tint: oklch(0.678 0.231 38 / 0.1);
-  --color-on-accent: oklch(0.16 0.01 60);
+  --color-accent-tint: oklch(0.75 0.15 45 / 0.12);
+  --color-on-accent: oklch(1 0 0);
 
-  /* dark "toad" world (client swipe + compare) */
-  --color-ink-bg: oklch(0.168 0.006 285);
-  --color-ink-surface: oklch(0.223 0.006 285);
-  --color-ink-raised: oklch(0.27 0.006 285);
+  /* one dark fold (footer) — antinomy signature */
+  --color-ink-bg: oklch(0.19 0.006 285);
+  --color-ink-surface: oklch(0.235 0.006 285);
   --color-ink-line: oklch(1 0 0 / 0.1);
-  --color-ink-text: oklch(0.97 0 0);
+  --color-ink-text: oklch(0.98 0 0);
   --color-ink-muted: oklch(0.72 0.005 285);
 
-  --radius-card: 14px;
+  --radius-card: 18px;
+  --radius-xl: 26px;
 
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -61,7 +90,7 @@
 
   h1, h2, h3, h4 {
     text-wrap: balance;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.022em;
     font-weight: 600;
   }
 
@@ -77,24 +106,28 @@
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
-    border-radius: 3px;
+    border-radius: 4px;
   }
 }
 
-/* Tabular figures for the technical/mono numerals */
+/* Soft floating shadows — Chronicle's signature. Never paired with a border. */
+.shadow-float {
+  box-shadow:
+    0 1px 2px rgba(20, 18, 15, 0.04),
+    0 24px 48px -24px rgba(20, 18, 15, 0.2);
+}
+.shadow-soft {
+  box-shadow:
+    0 1px 2px rgba(20, 18, 15, 0.04),
+    0 10px 26px -16px rgba(20, 18, 15, 0.14);
+}
+
 .tnum {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* Thin hairline separators reused across the site */
-.hairline {
-  border-color: var(--color-line);
-}
-
-/* Scroll-driven reveal — pure CSS. Content is visible by default; when the
-   browser supports scroll timelines it animates in. It is NEVER gated on JS,
-   so it can't ship a blank section in a headless/paused render. */
+/* Scroll-driven reveal — visible by default; never gates content on JS. */
 .reveal {
   opacity: 1;
 }
@@ -110,7 +143,7 @@
 @keyframes reveal-rise {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
