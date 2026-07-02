@@ -13,6 +13,7 @@ import { X, Plus, Heart, ArrowRight, Check } from "lucide-react";
 import type { Precedent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
+import { recordResponse } from "@/lib/actions/projects";
 
 type Verdict = "like" | "pass" | "pin";
 
@@ -136,10 +137,13 @@ export function SwipeDeck({
   categoryName,
   precedents,
   nextHref,
+  sessionId,
 }: {
   categoryName: string;
   precedents: Precedent[];
   nextHref: string;
+  /** when present (real board), each swipe is recorded to Supabase */
+  sessionId?: string;
 }) {
   const prefersReduced = useReducedMotion() ?? false;
   const [mounted, setMounted] = useState(false);
@@ -161,6 +165,7 @@ export function SwipeDeck({
   function advance(v: Verdict) {
     const p = precedents[index];
     if (!p) return;
+    if (sessionId) void recordResponse(sessionId, p.id, v).catch(() => {});
     if (v === "pin") setPins((a) => [...a, p.id]);
     if (v === "like" || v === "pin") setLikes((a) => [...a, p.id]);
     setDir(v === "pass" ? -1 : 1);

@@ -5,7 +5,13 @@ Atelo ships fully working on mock data. This connects it to a real backend:
 Supabase is configured (`isSupabaseConfigured`) and degrades to demo mode when
 it isn't — so nothing breaks while you set this up.
 
-Time: ~15 minutes.
+Time: ~2 minutes (your keys are already in `.env.local`).
+
+> **Status:** the app is now fully wired to Supabase — creating boards, uploading
+> product photos + colour swatches, the shareable client link, swipe recording,
+> and report generation all use the real backend (with a mock fallback so the demo
+> keeps working). The **only** remaining step is **applying the schema (step 3)**
+> plus the **auth redirect (step 4)**. Connection is already verified.
 
 ---
 

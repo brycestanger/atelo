@@ -3,6 +3,8 @@ import { ArrowLeft } from "lucide-react";
 import { FinishReport, ProjectActions } from "@/components/app/results";
 import { StatusBadge } from "@/components/app/dashboard-ui";
 import { PROJECTS, SAMPLE_BRIEF } from "@/lib/mock-data";
+import { buildReport, getBoard } from "@/lib/actions/projects";
+import type { ProjectStatus } from "@/lib/types";
 
 export default async function ProjectPage({
   params,
@@ -10,8 +12,13 @@ export default async function ProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = PROJECTS.find((p) => p.id === id);
-  const name = project?.name ?? "Finish report";
+  const board = await getBoard(id); // real board by slug (null in demo mode)
+  const mock = PROJECTS.find((p) => p.id === id);
+
+  const name = board?.name ?? mock?.name ?? "Finish report";
+  const client = board?.client ?? mock?.client ?? undefined;
+  const status = (board?.status ?? mock?.status ?? "ready") as ProjectStatus;
+  const brief = (board ? await buildReport(board.id) : null) ?? SAMPLE_BRIEF;
 
   return (
     <>
@@ -24,15 +31,13 @@ export default async function ProjectPage({
 
       <header className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
-          {project && (
-            <div className="mb-2">
-              <StatusBadge status={project.status} />
-            </div>
-          )}
+          <div className="mb-2">
+            <StatusBadge status={status} />
+          </div>
           <h1 className="text-[2rem] font-semibold tracking-[-0.02em]">{name}</h1>
           <p className="mt-1 text-[0.92rem] text-muted">
-            {project?.client && project.client !== "—"
-              ? `Client · ${project.client}`
+            {client && client !== "—"
+              ? `Client · ${client}`
               : "Built from your client's swipes and showdown"}
           </p>
         </div>
@@ -40,11 +45,7 @@ export default async function ProjectPage({
       </header>
 
       <div className="mt-8">
-        <FinishReport
-          brief={SAMPLE_BRIEF}
-          project={name}
-          client={project?.client}
-        />
+        <FinishReport brief={brief} project={name} client={client ?? undefined} />
       </div>
     </>
   );

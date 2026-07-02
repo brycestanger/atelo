@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import type { Precedent } from "@/lib/types";
 import { Button } from "@/components/ui";
+import { recordWinner, completeSession } from "@/lib/actions/projects";
 
 function Face({ p }: { p: Precedent }) {
   if (p.kind === "swatch") {
@@ -48,10 +49,16 @@ export function CompareArena({
   categoryName,
   contenders,
   nextHref,
+  sessionId,
+  projectId,
+  categoryId,
 }: {
   categoryName: string;
   contenders: Precedent[];
   nextHref: string;
+  sessionId?: string;
+  projectId?: string;
+  categoryId?: string;
 }) {
   const prefersReduced = useReducedMotion() ?? false;
   const [mounted, setMounted] = useState(false);
@@ -65,6 +72,16 @@ export function CompareArena({
   const champion = round.length <= 1 ? round[0] : null;
   const a = round[i];
   const b = round[i + 1];
+
+  // On a real board, record the winner + finish the session (once).
+  const fired = useRef(false);
+  useEffect(() => {
+    if (champion && sessionId && projectId && categoryId && !fired.current) {
+      fired.current = true;
+      void recordWinner(sessionId, categoryId, champion.id).catch(() => {});
+      void completeSession(sessionId, projectId).catch(() => {});
+    }
+  }, [champion, sessionId, projectId, categoryId]);
 
   function pick(w?: Precedent) {
     if (!w) return;
