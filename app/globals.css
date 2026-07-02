@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+ * ATELO design tokens — see DESIGN.md
+ * Near-neutral off-white (not warm cream), near-black ink, one loud
+ * International Orange, and a separate dark "toad" world for the client.
+ * ------------------------------------------------------------------ */
+@theme {
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", "Liberation Mono", monospace;
+
+  /* light world */
+  --color-bg: oklch(0.969 0.003 83);
+  --color-surface: oklch(0.988 0.002 83);
+  --color-ink: oklch(0.205 0.006 75);
+  --color-muted: oklch(0.452 0.008 75);
+  --color-faint: oklch(0.62 0.006 75);
+  --color-line: oklch(0.205 0.006 75 / 0.14);
+  --color-hairline: oklch(0.205 0.006 75 / 0.08);
+
+  /* the pop */
+  --color-accent: oklch(0.678 0.231 38);
+  --color-accent-press: oklch(0.62 0.225 38);
+  --color-accent-tint: oklch(0.678 0.231 38 / 0.1);
+  --color-on-accent: oklch(0.16 0.01 60);
+
+  /* dark "toad" world (client swipe + compare) */
+  --color-ink-bg: oklch(0.168 0.006 285);
+  --color-ink-surface: oklch(0.223 0.006 285);
+  --color-ink-raised: oklch(0.27 0.006 285);
+  --color-ink-line: oklch(1 0 0 / 0.1);
+  --color-ink-text: oklch(0.97 0 0);
+  --color-ink-muted: oklch(0.72 0.005 285);
+
+  --radius-card: 14px;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+}
+
+/* Tabular figures for the technical/mono numerals */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Thin hairline separators reused across the site */
+.hairline {
+  border-color: var(--color-line);
+}
+
+/* Scroll-driven reveal — pure CSS. Content is visible by default; when the
+   browser supports scroll timelines it animates in. It is NEVER gated on JS,
+   so it can't ship a blank section in a headless/paused render. */
+.reveal {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    animation: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
