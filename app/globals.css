@@ -38,14 +38,16 @@
   /* mono repointed to the brand face — labels stay clean, never techy */
   --font-mono: "ABC Diatype", var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
 
-  --color-bg: oklch(0.945 0.0015 106);
-  --color-surface: oklch(0.997 0 0);
-  --color-surface-2: oklch(0.973 0.0015 106);
+  /* Chronicle's exact greys: page #F3F3F3, panels #E1E1E1 -> #EBE7E6, white cards */
+  --color-bg: oklch(0.957 0 0);
+  --color-surface: oklch(1 0 0);
+  --color-surface-2: oklch(0.93 0 0);
   --color-ink: oklch(0.23 0.006 75);
-  --color-muted: oklch(0.47 0.008 75);
-  --color-faint: oklch(0.6 0.006 75);
-  --color-line: oklch(0.872 0.003 106);
-  --color-hairline: oklch(0.912 0.002 106);
+  --color-muted: oklch(0.47 0.006 75);
+  --color-faint: oklch(0.62 0.004 75);
+  /* borders are whisper-soft — separation comes from shadow + gradient, not lines */
+  --color-line: oklch(0 0 0 / 0.07);
+  --color-hairline: oklch(0 0 0 / 0.04);
 
   /* the pop */
   --color-accent: oklch(0.678 0.231 38);
@@ -60,8 +62,8 @@
   --color-ink-text: oklch(0.98 0 0);
   --color-ink-muted: oklch(0.72 0.005 285);
 
-  --radius-card: 18px;
-  --radius-xl: 26px;
+  --radius-card: 20px;
+  --radius-xl: 30px;
 
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -113,13 +115,19 @@
 /* Soft floating shadows — Chronicle's signature. Never paired with a border. */
 .shadow-float {
   box-shadow:
-    0 1px 2px rgba(20, 18, 15, 0.04),
-    0 24px 48px -24px rgba(20, 18, 15, 0.2);
+    0 2px 5px rgba(20, 18, 15, 0.05),
+    0 34px 64px -28px rgba(20, 18, 15, 0.3);
 }
 .shadow-soft {
   box-shadow:
-    0 1px 2px rgba(20, 18, 15, 0.04),
-    0 10px 26px -16px rgba(20, 18, 15, 0.14);
+    0 1px 3px rgba(20, 18, 15, 0.05),
+    0 16px 38px -20px rgba(20, 18, 15, 0.2);
+}
+
+/* Chronicle-style gradient panel — grey field that white cards float on.
+   No border; the gradient + soft edges blend it into the page. */
+.panel {
+  background: linear-gradient(180deg, rgb(225, 225, 225) 0%, rgb(235, 231, 230) 100%);
 }
 
 .tnum {

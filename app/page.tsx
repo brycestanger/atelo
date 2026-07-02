@@ -83,8 +83,8 @@ const PROOF = ["Architecture", "Interiors", "Kitchen & bath", "New builds", "Ren
 
 function ProofBand() {
   return (
-    <section className="border-y border-line bg-surface/60">
-      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-8 gap-y-3 px-5 py-6 sm:px-8">
+    <section>
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-8 gap-y-3 px-5 py-8 sm:px-8">
         <span className="text-[0.85rem] text-faint">Built for the way studios work —</span>
         {PROOF.map((p) => (
           <span key={p} className="text-[0.9rem] font-medium text-muted">
@@ -111,8 +111,10 @@ function DemoSection() {
           The whole flow, start to finish — drag the slider, or let it play.
         </p>
       </Reveal>
-      <Reveal delay={0.08} className="mx-auto mt-12 max-w-[980px]">
-        <DemoSlider />
+      <Reveal delay={0.08} className="mx-auto mt-12 max-w-[1060px]">
+        <div className="panel rounded-[30px] p-4 sm:p-8">
+          <DemoSlider />
+        </div>
       </Reveal>
     </section>
   );
@@ -144,7 +146,7 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section id="how" className="scroll-mt-24 border-y border-line bg-surface/40">
+    <section id="how" className="scroll-mt-24">
       <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
         <Reveal className="max-w-[44ch]">
           <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
@@ -154,7 +156,7 @@ function HowItWorks() {
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.06}>
-              <div className="flex h-full flex-col rounded-card border border-line bg-surface p-6">
+              <div className="flex h-full flex-col rounded-card bg-surface p-6 shadow-soft">
                 <span className="text-[1.5rem] font-semibold tracking-tight text-accent tnum">
                   {s.n}
                 </span>
@@ -183,7 +185,7 @@ function Features() {
 
       <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-6">
         <Reveal className="md:col-span-4 md:row-span-2">
-          <article className="flex h-full min-h-[320px] flex-col justify-between rounded-card border border-line bg-surface p-7">
+          <article className="flex h-full min-h-[320px] flex-col justify-between rounded-card bg-surface p-7 shadow-soft">
             <div>
               <h3 className="text-[1.5rem] font-semibold leading-tight tracking-[-0.02em]">
                 Any finish, any category
@@ -267,7 +269,7 @@ function FeatureCell({
 }) {
   return (
     <Reveal className={`md:col-span-2 ${className}`}>
-      <article className="flex h-full min-h-[200px] flex-col justify-between rounded-card border border-line bg-surface p-6">
+      <article className="flex h-full min-h-[200px] flex-col justify-between rounded-card bg-surface p-6 shadow-soft">
         <div>
           <h3 className="text-[1.18rem] font-semibold leading-snug tracking-[-0.01em]">
             {title}
@@ -283,7 +285,7 @@ function FeatureCell({
 /* ----------------------------------------------------------- Report section */
 function ReportSection() {
   return (
-    <section className="border-y border-line bg-surface/40">
+    <section>
       <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
         <Reveal className="mx-auto max-w-[52ch] text-center">
           <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
@@ -294,8 +296,10 @@ function ReportSection() {
             on-brand, and ready to present. Here&apos;s what lands on your dashboard.
           </p>
         </Reveal>
-        <Reveal delay={0.08} className="mx-auto mt-12 max-w-[960px]">
-          <ReportPreview />
+        <Reveal delay={0.08} className="mx-auto mt-12 max-w-[1000px]">
+          <div className="panel rounded-[30px] p-4 sm:p-8">
+            <ReportPreview />
+          </div>
         </Reveal>
       </div>
     </section>
@@ -369,8 +373,10 @@ function Pricing() {
         {TIERS.map((t, i) => (
           <Reveal key={t.name} delay={i * 0.06}>
             <article
-              className={`flex h-full flex-col rounded-card border p-7 ${
-                t.featured ? "border-accent bg-surface" : "border-line bg-surface"
+              className={`flex h-full flex-col rounded-card p-7 ${
+                t.featured
+                  ? "border border-accent bg-surface shadow-float"
+                  : "bg-surface shadow-soft"
               }`}
             >
               <div className="flex items-center justify-between">
