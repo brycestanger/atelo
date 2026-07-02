@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Plus, X, Upload, Link2 } from "lucide-react";
 import { Button, Tag } from "@/components/ui";
+import { createProject } from "@/lib/actions/projects";
 import { PRECEDENTS } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,23 @@ export default function NewBoardPage() {
   ]);
   const [draft, setDraft] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const router = useRouter();
+
+  async function finish() {
+    setSaving(true);
+    const res = await createProject({
+      name: name || "New project",
+      client,
+      categories: cats.map((c) => ({
+        name: c,
+        kind: /colou?r/i.test(c) ? "swatch" : "photo",
+      })),
+    });
+    setSaving(false);
+    // Wired to Supabase when configured; otherwise falls back to the demo board.
+    router.push(res.ok ? `/dashboard/project/${res.slug}` : "/dashboard");
+  }
 
   const slug =
     (name || "new-board")
@@ -220,8 +239,12 @@ export default function NewBoardPage() {
               <Button href={`/c/${slug}`} variant="ghost">
                 Preview client view
               </Button>
-              <Button href="/dashboard" variant="accent">
-                Done — go to board
+              <Button
+                onClick={finish}
+                variant="accent"
+                className={saving ? "pointer-events-none opacity-60" : ""}
+              >
+                {saving ? "Creating…" : "Done — go to board"}
               </Button>
             </div>
           </div>
