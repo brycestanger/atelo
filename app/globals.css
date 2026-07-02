@@ -38,14 +38,14 @@
   /* mono repointed to the brand face — labels stay clean, never techy */
   --font-mono: "ABC Diatype", var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
 
-  --color-bg: oklch(0.971 0.003 95);
-  --color-surface: oklch(1 0 0);
-  --color-surface-2: oklch(0.981 0.002 95);
+  --color-bg: oklch(0.945 0.0015 106);
+  --color-surface: oklch(0.997 0 0);
+  --color-surface-2: oklch(0.973 0.0015 106);
   --color-ink: oklch(0.23 0.006 75);
-  --color-muted: oklch(0.48 0.008 75);
-  --color-faint: oklch(0.63 0.006 75);
-  --color-line: oklch(0.23 0.01 75 / 0.1);
-  --color-hairline: oklch(0.23 0.01 75 / 0.06);
+  --color-muted: oklch(0.47 0.008 75);
+  --color-faint: oklch(0.6 0.006 75);
+  --color-line: oklch(0.872 0.003 106);
+  --color-hairline: oklch(0.912 0.002 106);
 
   /* the pop */
   --color-accent: oklch(0.678 0.231 38);

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { Button, Dot, LiveClock, Tag, Wordmark } from "@/components/ui";
+import { Button, Dot, Tag, Wordmark } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -48,7 +48,6 @@ export function SiteNav() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <LiveClock className="mr-1 hidden text-faint lg:inline" label="YVR" />
           <Link
             href="/login"
             className="hidden text-[0.86rem] text-muted transition-colors hover:text-ink sm:inline"
@@ -145,8 +144,7 @@ export function SiteFooter() {
         {/* metadata baseline */}
         <div className="flex flex-col gap-3 border-t border-ink-line py-8 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-ink-muted sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 Atelo — Digital Creative Studio</span>
-          <span className="hidden sm:inline">Amsterdam · Vancouver</span>
-          <LiveClock label="YVR" />
+          <span>Amsterdam · Vancouver</span>
         </div>
       </div>
     </footer>

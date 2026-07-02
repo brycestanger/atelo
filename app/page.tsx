@@ -1,6 +1,6 @@
-import { ArrowRight, ArrowUpRight, Link2, Sparkles } from "lucide-react";
+import { ArrowRight, Link2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-chrome";
-import { HeroCanvas, TestSwipe, ReportPreview } from "@/components/product-mock";
+import { DemoSlider, TestSwipe, ReportPreview } from "@/components/product-mock";
 import { Button, Dot, Reveal } from "@/components/ui";
 import { CATEGORIES } from "@/lib/mock-data";
 
@@ -11,7 +11,7 @@ export default function LandingPage() {
       <main className="overflow-clip">
         <Hero />
         <ProofBand />
-        <TryIt />
+        <DemoSection />
         <HowItWorks />
         <Features />
         <ReportSection />
@@ -25,69 +25,70 @@ export default function LandingPage() {
 /* ------------------------------------------------------------------ Hero */
 function Hero() {
   return (
-    <section className="relative mx-auto max-w-[1200px] px-5 pb-10 pt-28 sm:px-8 sm:pt-32">
-      <div className="mx-auto max-w-[820px] text-center">
-        <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.8rem] text-muted shadow-soft">
-            <Dot /> For architects &amp; interior designers
-          </span>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <h1 className="mt-6 text-[clamp(2.4rem,6vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.03em]">
-            Your client picks the finishes.
-            <br className="hidden sm:block" /> You get the report
-            <span className="text-accent">.</span>
-          </h1>
-        </Reveal>
-        <Reveal delay={0.12}>
-          <p className="mx-auto mt-6 max-w-[54ch] text-[1.08rem] leading-relaxed text-muted">
-            Send one link. Your client swipes through colours, countertops, lighting
-            and fixtures on their phone — about five minutes — and Atelo hands you a
-            client-ready finish report to send right back.
-          </p>
-        </Reveal>
-        <Reveal delay={0.18}>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button href="/dashboard" size="lg" variant="primary">
-              Start free
-              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </Button>
-            <Button href="/dashboard/project/kerrisdale-kitchen" size="lg" variant="ghost">
-              See a live report
-            </Button>
+    <section className="relative mx-auto max-w-[1200px] px-5 pb-14 pt-28 sm:px-8 sm:pt-32">
+      <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <Reveal>
+            <span className="inline-flex items-center gap-2 text-[0.92rem] font-medium text-muted">
+              <Dot /> Signal over noise
+            </span>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <h1 className="mt-5 text-[clamp(2.5rem,6vw,4.5rem)] font-semibold leading-[0.98] tracking-[-0.03em]">
+              Turn client swipes into a finish report
+              <span className="text-accent">.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <p className="mt-6 max-w-[46ch] text-[1.05rem] leading-relaxed text-muted">
+              Send one link. Your client swipes through colours, countertops,
+              lighting and fixtures on their phone — about five minutes — and Atelo
+              hands you a client-ready report to send right back.
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Button href="/dashboard" size="lg" variant="primary">
+                Start free
+                <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </Button>
+              <Button
+                href="/dashboard/project/kerrisdale-kitchen"
+                size="lg"
+                variant="ghost"
+              >
+                See a live report
+              </Button>
+            </div>
+          </Reveal>
+          <Reveal delay={0.24}>
+            <p className="mt-6 text-[0.85rem] text-faint">
+              Free first board · No card required · No login for your client
+            </p>
+          </Reveal>
+        </div>
+
+        <Reveal delay={0.1} className="lg:justify-self-end">
+          <div className="flex flex-col items-center">
+            <TestSwipe />
           </div>
         </Reveal>
-        <Reveal delay={0.24}>
-          <p className="mt-5 text-[0.85rem] text-faint">
-            Free first board · No card required · No login for your client
-          </p>
-        </Reveal>
       </div>
-
-      <Reveal delay={0.1} className="mx-auto mt-14 max-w-[1000px]">
-        <HeroCanvas />
-      </Reveal>
     </section>
   );
 }
 
 /* ------------------------------------------------------------- Proof band */
-const PROOF = [
-  "Architecture",
-  "Interiors",
-  "Kitchen & bath",
-  "New builds",
-  "Renovations",
-];
+const PROOF = ["Architecture", "Interiors", "Kitchen & bath", "New builds", "Renovations"];
 
 function ProofBand() {
   return (
-    <section className="border-y border-line bg-surface/50">
+    <section className="border-y border-line bg-surface/60">
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-8 gap-y-3 px-5 py-6 sm:px-8">
         <span className="text-[0.85rem] text-faint">Built for the way studios work —</span>
         {PROOF.map((p) => (
-          <span key={p} className="flex items-center gap-8">
-            <span className="text-[0.9rem] font-medium text-muted">{p}</span>
+          <span key={p} className="text-[0.9rem] font-medium text-muted">
+            {p}
           </span>
         ))}
       </div>
@@ -95,34 +96,24 @@ function ProofBand() {
   );
 }
 
-/* --------------------------------------------------------------- Try it */
-function TryIt() {
+/* --------------------------------------------------------- Demo (moved down) */
+function DemoSection() {
   return (
-    <section id="try" className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-24 sm:px-8 sm:py-28">
-      <div className="grid items-center gap-14 lg:grid-cols-[1fr_auto]">
-        <Reveal className="max-w-[46ch]">
-          <span className="inline-flex items-center gap-2 text-[0.85rem] font-medium text-accent">
-            <Sparkles className="size-4" /> Try it right now
-          </span>
-          <h2 className="mt-4 text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-            This is the whole client experience.
-          </h2>
-          <p className="mt-5 text-[1.05rem] leading-relaxed text-muted">
-            Go ahead — swipe through a few exterior colours. Love it, or pass. Your
-            client does exactly this, on their phone, for every category you set up.
-            No account, no learning curve, no ten-tab email thread.
-          </p>
-          <div className="mt-7">
-            <Button href="/c/kerrisdale-kitchen" variant="ghost">
-              Open the full client demo
-              <ArrowUpRight className="size-4" />
-            </Button>
-          </div>
-        </Reveal>
-        <Reveal delay={0.08} className="justify-self-center">
-          <TestSwipe />
-        </Reveal>
-      </div>
+    <section
+      id="product"
+      className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-24 sm:px-8 sm:py-28"
+    >
+      <Reveal className="mx-auto max-w-[46ch] text-center">
+        <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+          Set it up. Send it. Read the report.
+        </h2>
+        <p className="mt-5 text-[1.05rem] leading-relaxed text-muted">
+          The whole flow, start to finish — drag the slider, or let it play.
+        </p>
+      </Reveal>
+      <Reveal delay={0.08} className="mx-auto mt-12 max-w-[980px]">
+        <DemoSlider />
+      </Reveal>
     </section>
   );
 }
@@ -153,7 +144,7 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section id="how" className="scroll-mt-24 border-y border-line bg-surface/50">
+    <section id="how" className="scroll-mt-24 border-y border-line bg-surface/40">
       <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
         <Reveal className="max-w-[44ch]">
           <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
@@ -163,7 +154,7 @@ function HowItWorks() {
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.06}>
-              <div className="flex h-full flex-col rounded-card border border-line bg-surface p-6 shadow-soft">
+              <div className="flex h-full flex-col rounded-card border border-line bg-surface p-6">
                 <span className="text-[1.5rem] font-semibold tracking-tight text-accent tnum">
                   {s.n}
                 </span>
@@ -183,7 +174,7 @@ function HowItWorks() {
 /* -------------------------------------------------------------- Features */
 function Features() {
   return (
-    <section id="product" className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-24 sm:px-8 sm:py-28">
+    <section className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
       <Reveal className="max-w-[42ch]">
         <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
           Everything the fuzzy front-end needs.
@@ -192,7 +183,7 @@ function Features() {
 
       <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-6">
         <Reveal className="md:col-span-4 md:row-span-2">
-          <article className="flex h-full min-h-[320px] flex-col justify-between rounded-card border border-line bg-surface p-7 shadow-soft">
+          <article className="flex h-full min-h-[320px] flex-col justify-between rounded-card border border-line bg-surface p-7">
             <div>
               <h3 className="text-[1.5rem] font-semibold leading-tight tracking-[-0.02em]">
                 Any finish, any category
@@ -276,7 +267,7 @@ function FeatureCell({
 }) {
   return (
     <Reveal className={`md:col-span-2 ${className}`}>
-      <article className="flex h-full min-h-[200px] flex-col justify-between rounded-card border border-line bg-surface p-6 shadow-soft">
+      <article className="flex h-full min-h-[200px] flex-col justify-between rounded-card border border-line bg-surface p-6">
         <div>
           <h3 className="text-[1.18rem] font-semibold leading-snug tracking-[-0.01em]">
             {title}
@@ -292,7 +283,7 @@ function FeatureCell({
 /* ----------------------------------------------------------- Report section */
 function ReportSection() {
   return (
-    <section className="border-y border-line bg-surface/50">
+    <section className="border-y border-line bg-surface/40">
       <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
         <Reveal className="mx-auto max-w-[52ch] text-center">
           <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
@@ -379,9 +370,7 @@ function Pricing() {
           <Reveal key={t.name} delay={i * 0.06}>
             <article
               className={`flex h-full flex-col rounded-card border p-7 ${
-                t.featured
-                  ? "border-accent bg-surface shadow-float"
-                  : "border-line bg-surface shadow-soft"
+                t.featured ? "border-accent bg-surface" : "border-line bg-surface"
               }`}
             >
               <div className="flex items-center justify-between">

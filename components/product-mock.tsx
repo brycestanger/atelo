@@ -7,14 +7,14 @@ import {
   useReducedMotion,
   useTransform,
 } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, Copy, Heart, Plus, Send, X } from "lucide-react";
 import { SAMPLE_BRIEF, TEST_DECK } from "@/lib/mock-data";
 import type { Precedent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-const SCENES = ["Set up", "Client swipes", "Report"] as const;
+const SCENES = ["Set up the board", "Client swipes", "Finish report"] as const;
 
 function useMounted() {
   const [m, setM] = useState(false);
@@ -22,7 +22,6 @@ function useMounted() {
   return m;
 }
 
-/* -------------------------------------------------- avatars (no assets) */
 function Avatar({ label, tone }: { label: string; tone: string }) {
   return (
     <span
@@ -34,139 +33,114 @@ function Avatar({ label, tone }: { label: string; tone: string }) {
   );
 }
 
-/* -------------------------------------------------------- Scene: set up */
+/* --------------------------------------------------- Scene 1: set up */
 function SetupScene() {
   const chips = ["Exterior Colour", "Countertops", "Lighting", "Tile & Stone", "Fixtures"];
   return (
-    <div className="grid h-full grid-cols-[1fr] gap-4 p-5 sm:grid-cols-[0.9fr_1.1fr] sm:p-7">
-      <div className="hidden flex-col justify-between rounded-2xl bg-surface-2 p-5 sm:flex">
+    <div className="grid h-full grid-cols-1 gap-5 p-6 sm:grid-cols-[0.85fr_1.15fr] sm:p-8">
+      <div className="hidden flex-col justify-between rounded-2xl border border-line bg-surface-2 p-5 sm:flex">
         <div className="space-y-3">
           <div className="h-2.5 w-16 rounded-full bg-ink/10" />
           <div className="h-2.5 w-24 rounded-full bg-ink/10" />
           <div className="h-2.5 w-20 rounded-full bg-ink/10" />
         </div>
-        <div className="rounded-xl bg-surface p-3 shadow-soft">
+        <div className="rounded-xl border border-line bg-surface p-3">
           <div className="text-[0.62rem] uppercase tracking-[0.12em] text-muted">Credits</div>
           <div className="mt-1 text-xl font-semibold">3</div>
         </div>
       </div>
 
       <div className="flex flex-col justify-center">
-        <div className="text-[0.7rem] uppercase tracking-[0.14em] text-muted">New project</div>
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE, delay: 0.05 }}
-          className="mt-2 flex items-center rounded-xl border border-line bg-surface px-4 py-3 text-[1.05rem] font-medium"
-        >
+        <div className="text-[0.72rem] uppercase tracking-[0.14em] text-muted">New project</div>
+        <div className="mt-2 flex items-center rounded-xl border border-line bg-surface px-4 py-3 text-[1.05rem] font-medium">
           Kerrisdale Kitchen
           <motion.span
             className="ml-0.5 inline-block h-5 w-px bg-accent"
             animate={{ opacity: [1, 0, 1] }}
             transition={{ repeat: Infinity, duration: 1.1 }}
           />
-        </motion.div>
+        </div>
 
-        <div className="mt-5 text-[0.7rem] uppercase tracking-[0.14em] text-muted">Categories</div>
+        <div className="mt-5 text-[0.72rem] uppercase tracking-[0.14em] text-muted">Categories</div>
         <div className="mt-2 flex flex-wrap gap-2">
-          {chips.map((c, i) => (
-            <motion.span
+          {chips.map((c) => (
+            <span
               key={c}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: EASE, delay: 0.15 + i * 0.08 }}
               className="rounded-full border border-line bg-surface px-3 py-1.5 text-[0.8rem]"
             >
               {c}
-            </motion.span>
+            </span>
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
-          className="mt-6 flex items-center gap-2 rounded-full border border-line bg-surface-2 p-1.5 pl-4"
-        >
+        <div className="mt-6 flex items-center gap-2 rounded-full border border-line bg-surface-2 p-1.5 pl-4">
           <span className="flex-1 truncate text-[0.82rem] text-muted">
             atelo.studio/c/kerrisdale-kitchen
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-[0.78rem] font-medium text-white">
-            <Copy className="size-3.5" /> Copy link
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-[0.78rem] font-medium text-white">
+            <Copy className="size-3.5" /> Copy
           </span>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------- Scene: swipe */
+/* -------------------------------------------------- Scene 2: swipe */
 function SwipeScene() {
-  const card = TEST_DECK.length ? null : null; // exterior colour is swatch; use a photo here
   return (
-    <div className="relative flex h-full items-center justify-center p-5">
-      <div className="relative w-[230px]">
-        <div className="absolute inset-0 translate-y-3 scale-95 rounded-[20px] bg-surface-2 shadow-soft" />
-        <motion.div
-          initial={{ opacity: 0, y: 12, rotate: -2 }}
-          animate={{ opacity: 1, y: 0, rotate: 0 }}
-          transition={{ duration: 0.5, ease: EASE }}
-          className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-float"
-        >
+    <div className="flex h-full flex-col items-center justify-center gap-4 p-6">
+      <div className="rounded-full border border-line bg-surface px-3 py-1 text-[0.72rem] text-muted tnum">
+        14 loved · 5 pinned
+      </div>
+      <div className="relative w-[190px]">
+        <div className="absolute inset-0 translate-y-2.5 scale-95 rounded-[18px] border border-line bg-surface-2" />
+        <div className="relative overflow-hidden rounded-[18px] border border-line bg-surface">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=600&q=80"
+            src="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=500&q=80"
             alt="Honed marble countertop"
-            className="h-[240px] w-full object-cover"
+            className="h-[200px] w-full object-cover"
           />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.7, rotate: -12 }}
-            animate={{ opacity: 1, scale: 1, rotate: -8 }}
-            transition={{ delay: 0.5, duration: 0.4, ease: EASE }}
-            className="absolute right-3 top-3 rounded-lg border-2 border-accent px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-accent"
-          >
-            Like
-          </motion.div>
-          <div className="p-3.5">
-            <div className="text-[0.92rem] font-semibold">Honed Carrara</div>
-            <div className="text-[0.75rem] text-muted">Marble · soft matte</div>
+          <span className="absolute right-3 top-3 rounded-lg border-2 border-white px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white">
+            Love
+          </span>
+          <div className="p-3">
+            <div className="text-[0.9rem] font-semibold">Honed Carrara</div>
+            <div className="text-[0.72rem] text-muted">Marble · soft matte</div>
           </div>
-        </motion.div>
+        </div>
       </div>
-
-      <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-3">
+      <div className="flex items-center gap-3">
         <span className="grid size-9 place-items-center rounded-full border border-line bg-surface text-muted">
           <X className="size-4" />
         </span>
-        <span className="grid size-11 place-items-center rounded-full bg-accent text-white shadow-soft">
+        <span className="grid size-11 place-items-center rounded-full bg-accent text-white">
           <Plus className="size-5" />
         </span>
         <span className="grid size-9 place-items-center rounded-full border border-line bg-surface text-muted">
           <Heart className="size-4" />
         </span>
       </div>
-      <div className="absolute right-5 top-5 rounded-full border border-line bg-surface px-3 py-1 text-[0.72rem] text-muted tnum">
-        14 liked · 5 pinned
-      </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------ Scene: report */
+/* -------------------------------------------------- Scene 3: report */
 function ReportScene() {
   const b = SAMPLE_BRIEF;
   return (
-    <div className="flex h-full flex-col justify-center p-5 sm:p-7">
-      <div className="flex items-center justify-between">
-        <div className="text-[0.7rem] uppercase tracking-[0.14em] text-muted">
+    <div className="flex h-full flex-col justify-center gap-3 p-6 sm:p-8">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 text-[0.72rem] uppercase tracking-[0.14em] text-muted">
           Finish report · Kerrisdale Kitchen
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-[0.66rem] font-medium text-white">
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-[0.66rem] font-medium text-white">
           <Check className="size-3" /> Ready
         </span>
       </div>
-      <div className="mt-3 text-[1.7rem] font-semibold tracking-[-0.02em]">{b.style}</div>
-      <div className="mt-3 flex items-center gap-1.5">
+      <div className="text-[1.6rem] font-semibold leading-none tracking-[-0.02em]">{b.style}</div>
+      <div className="flex items-center gap-1.5">
         {b.palette.map((c) => (
           <span
             key={c.name}
@@ -176,21 +150,24 @@ function ReportScene() {
         ))}
         <span className="ml-2 text-[0.78rem] text-muted">{Math.round(b.confidence * 100)}% aligned</span>
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {b.selections.filter((s) => s.kind === "photo").slice(0, 3).map((s) => (
-          <div key={s.category} className="overflow-hidden rounded-xl border border-line bg-surface">
-            <div className="aspect-[4/3] overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.src} alt={s.title} className="h-full w-full object-cover" />
+      <div className="grid grid-cols-3 gap-2">
+        {b.selections
+          .filter((s) => s.kind === "photo")
+          .slice(0, 3)
+          .map((s) => (
+            <div key={s.category} className="overflow-hidden rounded-xl border border-line bg-surface">
+              <div className="aspect-[5/4] overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={s.src} alt={s.title} className="h-full w-full object-cover" />
+              </div>
+              <div className="p-2">
+                <div className="truncate text-[0.72rem] font-medium">{s.title}</div>
+                <div className="truncate text-[0.6rem] text-muted">{s.category}</div>
+              </div>
             </div>
-            <div className="p-2">
-              <div className="truncate text-[0.72rem] font-medium">{s.title}</div>
-              <div className="truncate text-[0.62rem] text-muted">{s.category}</div>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
-      <div className="mt-4 flex justify-end">
+      <div className="flex justify-end">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[0.78rem] font-medium text-white">
           <Send className="size-3.5" /> Send to client
         </span>
@@ -201,26 +178,41 @@ function ReportScene() {
 
 const SCENE_COMPONENTS = [SetupScene, SwipeScene, ReportScene];
 
-/** The bright animated app-flow canvas — the hero centerpiece (Chronicle style). */
-export function HeroCanvas() {
+/* ------------------------------------------ the auto-sliding demo */
+export function DemoSlider() {
   const mounted = useMounted();
   const reduce = useReducedMotion() ?? false;
-  const [scene, setScene] = useState(0);
+  const [index, setIndex] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const railRef = useRef<HTMLDivElement>(null);
+  const n = SCENE_COMPONENTS.length;
 
   useEffect(() => {
-    if (!mounted || reduce) return;
-    const id = setInterval(() => setScene((s) => (s + 1) % SCENE_COMPONENTS.length), 3600);
+    if (!mounted || reduce || dragging) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % n), 4200);
     return () => clearInterval(id);
-  }, [mounted, reduce]);
+  }, [mounted, reduce, dragging, n]);
 
-  const Scene = SCENE_COMPONENTS[scene];
+  const setFromClientX = useCallback(
+    (clientX: number) => {
+      const rail = railRef.current;
+      if (!rail) return;
+      const r = rail.getBoundingClientRect();
+      const t = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+      setIndex(Math.round(t * (n - 1)));
+    },
+    [n],
+  );
+
+  const pct = n > 1 ? (index / (n - 1)) * 100 : 0;
+  const slideT = dragging || reduce ? { duration: 0 } : { duration: 0.7, ease: EASE };
 
   return (
     <div className="w-full">
-      <div className="overflow-hidden rounded-[26px] border border-line bg-surface shadow-float">
-        {/* top bar */}
+      <div className="overflow-hidden rounded-[26px] border border-line bg-surface shadow-soft">
+        {/* top bar — no clock */}
         <div className="flex items-center justify-between border-b border-line bg-surface-2/60 px-4 py-3">
-          <div className="flex items-center gap-2 text-[0.78rem] font-medium">
+          <div className="flex items-center gap-2 text-[0.8rem] font-medium">
             <span className="size-2 rounded-full bg-accent" />
             Atelo
             <span className="text-faint">/</span>
@@ -238,45 +230,66 @@ export function HeroCanvas() {
           </div>
         </div>
 
-        {/* scene stage */}
-        <div className="relative h-[360px] sm:h-[400px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={scene}
-              className="absolute inset-0"
-              initial={mounted && !reduce ? { opacity: 0 } : false}
-              animate={{ opacity: 1 }}
-              exit={reduce ? { opacity: 0 } : { opacity: 0 }}
-              transition={{ duration: 0.35, ease: EASE }}
-            >
-              <Scene />
-            </motion.div>
-          </AnimatePresence>
+        {/* sliding stage */}
+        <div className="relative h-[400px] overflow-hidden sm:h-[440px]">
+          <motion.div
+            className="flex h-full w-full"
+            animate={{ x: `-${index * 100}%` }}
+            transition={slideT}
+          >
+            {SCENE_COMPONENTS.map((Scene, i) => (
+              <div key={i} className="h-full w-full shrink-0">
+                <Scene />
+              </div>
+            ))}
+          </motion.div>
         </div>
       </div>
 
-      {/* scene tabs */}
-      <div className="mt-4 flex items-center justify-center gap-2">
-        {SCENES.map((label, i) => (
-          <button
-            key={label}
-            onClick={() => setScene(i)}
-            className={cn(
-              "group flex items-center gap-2 rounded-full px-3.5 py-2 text-[0.8rem] transition-colors",
-              scene === i ? "bg-ink text-white" : "text-muted hover:text-ink",
-            )}
-          >
-            <span
+      {/* the slider */}
+      <div className="mx-auto mt-6 max-w-[460px]">
+        <div
+          ref={railRef}
+          onPointerDown={(e) => {
+            setDragging(true);
+            railRef.current?.setPointerCapture(e.pointerId);
+            setFromClientX(e.clientX);
+          }}
+          onPointerMove={(e) => dragging && setFromClientX(e.clientX)}
+          onPointerUp={(e) => {
+            setDragging(false);
+            try {
+              railRef.current?.releasePointerCapture(e.pointerId);
+            } catch {}
+          }}
+          className="relative h-2.5 cursor-grab rounded-full bg-line active:cursor-grabbing"
+        >
+          <motion.div
+            className="absolute inset-y-0 left-0 rounded-full bg-accent"
+            animate={{ width: `${pct}%` }}
+            transition={slideT}
+          />
+          <motion.div
+            className="absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-line bg-surface shadow-soft"
+            animate={{ left: `${pct}%` }}
+            transition={slideT}
+          />
+        </div>
+        <div className="mt-3 flex items-center justify-between">
+          {SCENES.map((label, i) => (
+            <button
+              key={label}
+              onClick={() => setIndex(i)}
               className={cn(
-                "grid size-4 place-items-center rounded-full text-[0.6rem] font-semibold",
-                scene === i ? "bg-white/20" : "bg-ink/8 text-muted",
+                "text-[0.8rem] transition-colors",
+                index === i ? "font-medium text-ink" : "text-muted hover:text-ink",
               )}
             >
-              {i + 1}
-            </span>
-            {label}
-          </button>
-        ))}
+              <span className="mr-1.5 text-accent">{i + 1}</span>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -295,7 +308,7 @@ function SwatchFace({ p }: { p: Precedent }) {
   );
 }
 
-/** "Try it" — a real, swipeable deck of exterior colour swatches on the landing. */
+/** "Try it" — a real, swipeable deck of exterior colour swatches. */
 export function TestSwipe() {
   const mounted = useMounted();
   const reduce = useReducedMotion() ?? false;
@@ -380,7 +393,7 @@ export function TestSwipe() {
               </div>
               <div className="text-[1.05rem] font-semibold">You loved {liked} of {deck.length}</div>
               <div className="max-w-[22ch] text-[0.85rem] text-muted">
-                That&apos;s all it takes. Your client does this in five minutes.
+                That&apos;s the whole client experience — about five minutes.
               </div>
               <button
                 onClick={reset}
@@ -405,24 +418,24 @@ export function TestSwipe() {
           <button
             onClick={() => go(true)}
             aria-label="Love"
-            className="grid size-14 place-items-center rounded-full bg-accent text-white shadow-soft transition-all hover:bg-accent-press active:scale-90"
+            className="grid size-14 place-items-center rounded-full bg-accent text-white transition-all hover:bg-accent-press active:scale-90"
           >
             <Heart className="size-6" />
           </button>
         </div>
       )}
       <p className="mt-4 text-center text-[0.8rem] text-muted">
-        {done ? "Nice taste." : "Drag the card, or tap — this is the whole client experience."}
+        {done ? "Nice taste." : "Drag the card, or tap — try it."}
       </p>
     </div>
   );
 }
 
-/** Compact export-ready report used on the landing (mirrors the dashboard report). */
+/** Compact export-ready report used on the landing. */
 export function ReportPreview() {
   const b = SAMPLE_BRIEF;
   return (
-    <div className="overflow-hidden rounded-[22px] border border-line bg-surface shadow-float">
+    <div className="overflow-hidden rounded-[22px] border border-line bg-surface shadow-soft">
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
         <div className="flex items-center gap-2 text-[0.85rem] font-medium">
           <span className="size-2 rounded-full bg-accent" /> Finish Report
@@ -459,7 +472,6 @@ export function ReportPreview() {
                 <div className="truncate text-[0.85rem] font-medium">{s.title}</div>
                 <div className="truncate text-[0.72rem] text-muted">{s.category}</div>
               </div>
-              <span className="text-[0.7rem] text-faint">{s.note}</span>
             </div>
           ))}
         </div>
