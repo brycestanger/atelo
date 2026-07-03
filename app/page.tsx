@@ -1,6 +1,7 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-chrome";
-import { DemoSlider, TestSwipe, ReportPreview } from "@/components/product-mock";
+import { TestSwipe, ReportPreview } from "@/components/product-mock";
+import { HookDeck } from "@/components/landing/hooks";
 import { Showcase } from "@/components/landing/showcase";
 import { Button, Dot } from "@/components/ui";
 
@@ -31,49 +32,49 @@ function Hero() {
         <div className="absolute left-[4%] top-[42%] size-[300px] rounded-full glow-peach opacity-40 blur-[90px]" />
       </div>
 
-      <div className="mx-auto max-w-[880px] text-center">
-        <div className="rise">
-          <span className="inline-flex items-center gap-2 rounded-full bg-surface/80 px-3.5 py-1.5 text-[0.85rem] font-medium text-muted shadow-soft backdrop-blur">
-            <Dot /> Signal over noise
-          </span>
+      <div className="mx-auto grid max-w-[1200px] items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+        <div>
+          <div className="rise">
+            <span className="inline-flex items-center gap-2 rounded-full bg-surface/80 px-3.5 py-1.5 text-[0.85rem] font-medium text-muted shadow-soft backdrop-blur">
+              <Dot /> Signal over noise
+            </span>
+          </div>
+          <h1
+            className="rise mt-6 text-[clamp(2.5rem,5.5vw,4.4rem)] font-semibold leading-[0.98] tracking-[-0.035em]"
+            style={{ animationDelay: "0.06s" }}
+          >
+            Turn client swipes into a finished report
+            <span className="text-accent">.</span>
+          </h1>
+          <p
+            className="rise mt-6 max-w-[46ch] text-[1.1rem] leading-relaxed text-muted"
+            style={{ animationDelay: "0.12s" }}
+          >
+            Send one link. Your client swipes through colours, countertops, lighting
+            and fixtures on their phone — and Atelo hands you a client-ready report to
+            send right back.
+          </p>
+          <div
+            className="rise mt-9 flex flex-wrap items-center gap-3"
+            style={{ animationDelay: "0.18s" }}
+          >
+            <Button href="/dashboard" size="lg" variant="accent">
+              Start free
+              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Button>
+            <Button href="/c/kerrisdale-kitchen" size="lg" variant="ghost">
+              Try a demo
+            </Button>
+          </div>
+          <p className="rise mt-6 text-[0.85rem] text-faint" style={{ animationDelay: "0.24s" }}>
+            Free first board · No card required · No login for your client
+          </p>
         </div>
-        <h1
-          className="rise mt-6 text-[clamp(2.6rem,6.5vw,5rem)] font-semibold leading-[0.96] tracking-[-0.035em]"
-          style={{ animationDelay: "0.08s" }}
-        >
-          Turn client swipes into a finish report
-          <span className="text-accent">.</span>
-        </h1>
-        <p
-          className="rise mx-auto mt-6 max-w-[54ch] text-[1.1rem] leading-relaxed text-muted"
-          style={{ animationDelay: "0.16s" }}
-        >
-          Send one link. Your client swipes through colours, countertops, lighting
-          and fixtures on their phone — and Atelo hands you a client-ready report to
-          send right back.
-        </p>
-        <div
-          className="rise mt-9 flex flex-wrap items-center justify-center gap-3"
-          style={{ animationDelay: "0.24s" }}
-        >
-          <Button href="/dashboard" size="lg" variant="accent">
-            Start free
-            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-          </Button>
-          <Button href="/dashboard/project/kerrisdale-kitchen" size="lg" variant="ghost">
-            See a live report
-          </Button>
-        </div>
-        <p className="rise mt-5 text-[0.85rem] text-faint" style={{ animationDelay: "0.32s" }}>
-          Free first board · No card required · No login for your client
-        </p>
-      </div>
 
-      <div className="rise mx-auto mt-16 max-w-[1060px]" style={{ animationDelay: "0.42s" }}>
-        <div className="relative">
-          <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[44px] glow-peach opacity-45 blur-3xl" />
-          <div className="panel rounded-[32px] p-4 shadow-float sm:p-8">
-            <DemoSlider />
+        <div className="rise" style={{ animationDelay: "0.2s" }}>
+          <div className="relative">
+            <div className="pointer-events-none absolute -inset-8 -z-10 rounded-full glow-warm opacity-40 blur-3xl" />
+            <HookDeck />
           </div>
         </div>
       </div>

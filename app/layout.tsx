@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
+import { SmoothScroll } from "@/components/smooth-scroll";
 import "./globals.css";
 
 /* Fallback for ABC Diatype until licensed files are added to /public/fonts.
@@ -48,7 +49,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={hanken.variable}>
-      <body>{children}</body>
+      <body>
+        <SmoothScroll />
+        {children}
+      </body>
     </html>
   );
 }
