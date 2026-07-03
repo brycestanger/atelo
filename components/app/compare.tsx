@@ -52,6 +52,7 @@ export function CompareArena({
   sessionId,
   projectId,
   categoryId,
+  finalStep = true,
 }: {
   categoryName: string;
   contenders: Precedent[];
@@ -59,6 +60,8 @@ export function CompareArena({
   sessionId?: string;
   projectId?: string;
   categoryId?: string;
+  /** false when more categories follow — session is only completed on the last */
+  finalStep?: boolean;
 }) {
   const prefersReduced = useReducedMotion() ?? false;
   const [mounted, setMounted] = useState(false);
@@ -76,12 +79,14 @@ export function CompareArena({
   // On a real board, record the winner + finish the session (once).
   const fired = useRef(false);
   useEffect(() => {
-    if (champion && sessionId && projectId && categoryId && !fired.current) {
+    if (champion && sessionId && categoryId && !fired.current) {
       fired.current = true;
       void recordWinner(sessionId, categoryId, champion.id).catch(() => {});
-      void completeSession(sessionId, projectId).catch(() => {});
+      if (finalStep && projectId) {
+        void completeSession(sessionId, projectId).catch(() => {});
+      }
     }
-  }, [champion, sessionId, projectId, categoryId]);
+  }, [champion, sessionId, projectId, categoryId, finalStep]);
 
   function pick(w?: Precedent) {
     if (!w) return;
@@ -113,7 +118,7 @@ export function CompareArena({
           </div>
         </div>
         <Button href={nextHref} variant="accent" size="lg" className="mt-7">
-          Finish <ArrowRight className="size-4" />
+          {finalStep ? "Finish" : "Next category"} <ArrowRight className="size-4" />
         </Button>
       </div>
     );

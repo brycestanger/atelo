@@ -13,17 +13,27 @@ export default async function ComparePage({
   const { id, category } = await params;
   const { s: sessionId, p: projectId } = await searchParams;
   const board = await getBoard(id);
+  const q = sessionId && projectId ? `?s=${sessionId}&p=${projectId}` : "";
 
   let categoryName: string;
   let contenders: Precedent[];
   let categoryId = category;
+  let nextHref = `/c/${id}/complete`;
+  let finalStep = true;
 
   if (board) {
-    const cat =
-      board.categories.find((c) => c.id === category) ?? board.categories[0];
+    const idx = board.categories.findIndex((c) => c.id === category);
+    const cat = board.categories[idx] ?? board.categories[0];
     categoryName = cat?.name ?? "Finishes";
     contenders = (cat?.options ?? []).slice(0, 4);
     categoryId = cat?.id ?? category;
+    const next = board.categories[idx + 1];
+    if (next) {
+      nextHref = `/c/${id}/deck/${next.id}${q}`;
+      finalStep = false;
+    } else {
+      nextHref = `/c/${id}/complete${q}`;
+    }
   } else {
     const cat = CATEGORIES.find((c) => c.id === category) ?? CATEGORIES[0];
     categoryName = cat.name;
@@ -35,10 +45,11 @@ export default async function ComparePage({
       <CompareArena
         categoryName={categoryName}
         contenders={contenders}
-        nextHref={`/c/${id}/complete`}
+        nextHref={nextHref}
         sessionId={sessionId}
         projectId={projectId}
         categoryId={categoryId}
+        finalStep={finalStep}
       />
     </div>
   );

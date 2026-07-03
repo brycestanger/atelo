@@ -5,27 +5,32 @@ import type { Precedent } from "@/lib/types";
 
 export default async function DeckPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; category: string }>;
+  searchParams: Promise<{ s?: string; p?: string }>;
 }) {
   const { id, category } = await params;
+  const { s, p } = await searchParams;
   const board = await getBoard(id);
 
   let categoryName: string;
   let precedents: Precedent[];
   let nextHref = `/c/${id}/compare/${category}`;
-  let sessionId: string | undefined;
+  let sessionId = s;
 
   if (board) {
     const cat =
       board.categories.find((c) => c.id === category) ?? board.categories[0];
     categoryName = cat?.name ?? "Finishes";
     precedents = cat?.options ?? [];
-    const sid = await startSession(board.id);
-    if (sid && cat) {
-      sessionId = sid;
-      nextHref = `/c/${id}/compare/${cat.id}?s=${sid}&p=${board.id}`;
+    // one session for the whole board — start it on the first category, then thread it.
+    if (!sessionId) {
+      const sid = await startSession(board.id);
+      sessionId = sid ?? undefined;
     }
+    const q = sessionId ? `?s=${sessionId}&p=${board.id}` : "";
+    nextHref = `/c/${id}/compare/${cat?.id ?? category}${q}`;
   } else {
     const cat = CATEGORIES.find((c) => c.id === category) ?? CATEGORIES[0];
     categoryName = cat.name;
