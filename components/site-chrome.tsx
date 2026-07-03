@@ -109,12 +109,12 @@ const FOOTER_COLS: { head: string; links: FooterLinkT[] }[] = [
 
 function FooterLink({ link }: { link: FooterLinkT }) {
   const cls =
-    "group inline-flex items-center gap-1 text-[0.92rem] text-ink-text/75 transition-colors hover:text-accent";
+    "group inline-flex items-center gap-1 text-[0.92rem] text-ink/80 transition-colors hover:text-accent";
   if (link.external) {
     return (
       <a href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
         {link.label}
-        <ArrowUpRight className="size-3.5 text-ink-muted transition-colors group-hover:text-accent" />
+        <ArrowUpRight className="size-3.5 text-faint transition-colors group-hover:text-accent" />
       </a>
     );
   }
@@ -134,12 +134,17 @@ function FooterLink({ link }: { link: FooterLinkT }) {
 
 export function SiteFooter() {
   return (
-    <footer className="bg-ink-bg text-ink-text">
-      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
+    <footer className="relative overflow-hidden border-t border-line bg-bg text-ink">
+      {/* soft warm glow so the closing line keeps presence without a dark block */}
+      <div className="pointer-events-none absolute inset-0 -z-0">
+        <div className="absolute left-1/2 top-[-24%] size-[640px] -translate-x-1/2 rounded-full glow-warm opacity-50 blur-[120px]" />
+        <div className="absolute right-[8%] top-[10%] size-[360px] rounded-full glow-cool opacity-40 blur-[100px]" />
+      </div>
+      <div className="relative mx-auto max-w-[1200px] px-5 sm:px-8">
         {/* the big closing statement — kept, the line worth keeping */}
-        <div className="flex flex-col gap-8 border-b border-ink-line py-20 md:flex-row md:items-end md:justify-between md:py-28">
+        <div className="flex flex-col gap-8 border-b border-line py-20 md:flex-row md:items-end md:justify-between md:py-28">
           <div>
-            <span className="inline-flex items-center gap-2 text-[0.8rem] font-medium uppercase tracking-[0.16em] text-ink-muted">
+            <span className="inline-flex items-center gap-2 text-[0.8rem] font-medium uppercase tracking-[0.16em] text-muted">
               <Dot /> Ready when you are
             </span>
             <h2 className="mt-5 max-w-[14ch] text-[clamp(2.6rem,7vw,5.5rem)] font-semibold leading-[0.94] tracking-[-0.03em]">
@@ -149,7 +154,7 @@ export function SiteFooter() {
             </h2>
           </div>
           <div className="flex flex-col items-start gap-5 md:items-end">
-            <p className="max-w-[32ch] text-[0.98rem] leading-relaxed text-ink-muted md:text-right">
+            <p className="max-w-[32ch] text-[0.98rem] leading-relaxed text-muted md:text-right">
               Your first board is free. Send it to a client tonight and read the
               finish report tomorrow.
             </p>
@@ -158,7 +163,7 @@ export function SiteFooter() {
                 Create a board
                 <ArrowUpRight className="size-4" />
               </Button>
-              <Button href="/c/kerrisdale-kitchen" variant="ghost-dark" size="lg">
+              <Button href="/c/kerrisdale-kitchen" variant="ghost" size="lg">
                 See a client demo
               </Button>
             </div>
@@ -168,15 +173,15 @@ export function SiteFooter() {
         {/* brand + link columns */}
         <div className="grid grid-cols-2 gap-x-8 gap-y-12 py-16 sm:grid-cols-3 lg:grid-cols-[1.7fr_1fr_1fr_1fr]">
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">
-            <Wordmark dark />
-            <p className="mt-4 max-w-[32ch] text-[0.92rem] leading-relaxed text-ink-muted">
+            <Wordmark />
+            <p className="mt-4 max-w-[32ch] text-[0.92rem] leading-relaxed text-muted">
               Finish selection as a swipe. One link, a client-ready report — built
               for the way architecture and interior studios actually work.
             </p>
           </div>
           {FOOTER_COLS.map((col) => (
             <div key={col.head}>
-              <div className="text-[0.72rem] font-medium uppercase tracking-[0.16em] text-ink-muted">
+              <div className="text-[0.72rem] font-medium uppercase tracking-[0.16em] text-muted">
                 {col.head}
               </div>
               <ul className="mt-4 space-y-3">
@@ -191,7 +196,7 @@ export function SiteFooter() {
         </div>
 
         {/* baseline */}
-        <div className="flex flex-col gap-4 border-t border-ink-line py-8 text-[0.82rem] text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-line py-8 text-[0.82rem] text-muted sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 Atelo</span>
           <div className="flex items-center gap-6">
             <a
@@ -206,7 +211,7 @@ export function SiteFooter() {
               Designed &amp; built by{" "}
               <Link
                 href="/about"
-                className="text-ink-text/80 underline-offset-4 transition-colors hover:text-accent hover:underline"
+                className="font-medium text-ink underline-offset-4 transition-colors hover:text-accent hover:underline"
               >
                 Bryce Stanger
               </Link>
