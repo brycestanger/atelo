@@ -40,6 +40,25 @@ export type Project = {
   categories: Category[];
   /** 0..1 — how far the client has moved through the deck */
   swipeProgress: number;
+  /** client deadline, ISO yyyy-mm-dd (undefined = none set) */
+  due?: string;
+};
+
+export type Plan = "free" | "pro";
+
+/** A studio's billing state — boards + credits are per account. */
+export type Account = {
+  plan: Plan;
+  /** board allowance for non-pro plans (pro = unlimited) */
+  credits: number;
+  /** how many boards the studio currently owns */
+  boardCount: number;
+  /** remaining board slots (null = unlimited, i.e. Pro) */
+  remaining: number | null;
+  /** whether a new board may be created right now */
+  canCreate: boolean;
+  studioName: string | null;
+  email: string | null;
 };
 
 export type PaletteSwatch = { name: string; hex: string };

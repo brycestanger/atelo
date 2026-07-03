@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Brief, CategoryKind, Precedent, Project } from "@/lib/types";
+import type { Account, Brief, CategoryKind, Plan, Precedent, Project } from "@/lib/types";
 import { analyzeColours, analysisConfidence, type LikedColour } from "@/lib/analysis";
 
 const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -43,6 +43,8 @@ async function uniqueSlug(
 export type NewBoardInput = {
   name: string;
   client?: string;
+  /** client deadline, ISO yyyy-mm-dd */
+  due?: string;
   categories: { name: string; kind: CategoryKind }[];
 };
 
@@ -56,6 +58,12 @@ export async function createBoard(input: NewBoardInput) {
   } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, reason: "unauthenticated" as const };
 
+  // Enforce the studio's board allowance (Free = 1; credits add slots; Pro = ∞).
+  const account = await getAccount();
+  if (account && !account.canCreate) {
+    return { ok: false as const, reason: "limit" as const };
+  }
+
   const slug = await uniqueSlug(supabase, slugify(input.name));
   const { data: project, error } = await supabase
     .from("projects")
@@ -65,6 +73,7 @@ export async function createBoard(input: NewBoardInput) {
       client_name: input.client ?? null,
       slug,
       status: "draft",
+      due_date: input.due || null,
     })
     .select("id, slug")
     .single();
@@ -138,6 +147,7 @@ export type BoardData = {
   client?: string | null;
   slug: string;
   status: string;
+  due?: string | null;
   categories: { id: string; name: string; kind: CategoryKind; options: Precedent[] }[];
 };
 
@@ -148,7 +158,7 @@ export async function getBoard(slug: string): Promise<BoardData | null> {
   const { data } = await supabase
     .from("projects")
     .select(
-      "id,name,client_name,slug,status,categories(id,name,kind,position,options(id,title,meta,kind,image_path,color,position))",
+      "id,name,client_name,slug,status,due_date,categories(id,name,kind,position,options(id,title,meta,kind,image_path,color,position))",
     )
     .eq("slug", slug)
     .single();
@@ -160,6 +170,7 @@ export async function getBoard(slug: string): Promise<BoardData | null> {
     client_name: string | null;
     slug: string;
     status: string;
+    due_date: string | null;
     categories: {
       id: string;
       name: string;
@@ -196,7 +207,7 @@ export async function getBoard(slug: string): Promise<BoardData | null> {
         })),
     }));
 
-  return { id: d.id, name: d.name, client: d.client_name, slug: d.slug, status: d.status, categories };
+  return { id: d.id, name: d.name, client: d.client_name, slug: d.slug, status: d.status, due: d.due_date, categories };
 }
 
 /** The signed-in designer's own boards, for the dashboard grid. */
@@ -210,7 +221,7 @@ export async function listMyBoards(): Promise<Project[] | null> {
 
   const { data } = await supabase
     .from("projects")
-    .select("name,client_name,slug,status,created_at,categories(id,options(id))")
+    .select("name,client_name,slug,status,created_at,due_date,categories(id,options(id))")
     .eq("owner", user.id)
     .order("created_at", { ascending: false });
   if (!data) return [];
@@ -221,6 +232,7 @@ export async function listMyBoards(): Promise<Project[] | null> {
     slug: string;
     status: string;
     created_at: string;
+    due_date: string | null;
     categories: { id: string; options: { id: string }[] }[];
   }[];
 
@@ -240,7 +252,133 @@ export async function listMyBoards(): Promise<Project[] | null> {
       count: c.options?.length ?? 0,
     })),
     swipeProgress: p.status === "ready" ? 1 : p.status === "swiping" ? 0.5 : 0,
+    due: p.due_date ?? undefined,
   }));
+}
+
+/* ------------------------------------------------- account, credits & plans */
+
+/** The signed-in studio's billing state — boards + credits are per account. */
+export async function getAccount(): Promise<Account | null> {
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("plan, credits, studio_name")
+    .eq("id", user.id)
+    .single();
+
+  const { count } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("owner", user.id);
+
+  const plan: Plan = (prof?.plan as Plan) ?? "free";
+  const credits = typeof prof?.credits === "number" ? prof.credits : 1;
+  const boardCount = count ?? 0;
+  const pro = plan === "pro";
+
+  return {
+    plan,
+    credits,
+    boardCount,
+    remaining: pro ? null : Math.max(0, credits - boardCount),
+    canCreate: pro || boardCount < credits,
+    studioName: (prof?.studio_name as string | null) ?? null,
+    email: user.email ?? null,
+  };
+}
+
+/** Permanently delete a board the studio owns (cascades to its data). */
+export async function deleteBoard(slug: string) {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false as const, reason: "not-configured" };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, reason: "unauthenticated" };
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("slug", slug)
+    .eq("owner", user.id);
+  revalidatePath("/dashboard");
+  return { ok: !error, reason: error?.message };
+}
+
+/** Set (or clear, with null) a board's client deadline. */
+export async function setDueDate(slug: string, due: string | null) {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false as const };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const };
+  const { error } = await supabase
+    .from("projects")
+    .update({ due_date: due || null })
+    .eq("slug", slug)
+    .eq("owner", user.id);
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/project/${slug}`);
+  return { ok: !error, reason: error?.message };
+}
+
+/** Add board credits to the studio (mock purchase — wire to a payment webhook
+ *  before launch; here it just raises the allowance). */
+export async function buyCredits(n: number) {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false as const };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const };
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("credits")
+    .eq("id", user.id)
+    .single();
+  const next = (typeof prof?.credits === "number" ? prof.credits : 1) + Math.max(0, n);
+  const { error } = await supabase.from("profiles").update({ credits: next }).eq("id", user.id);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/credits");
+  return { ok: !error, credits: next };
+}
+
+/** Switch the studio's plan (mock — Pro grants unlimited boards). */
+export async function setPlan(plan: Plan) {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false as const };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const };
+  const { error } = await supabase.from("profiles").update({ plan }).eq("id", user.id);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/credits");
+  revalidatePath("/dashboard/settings");
+  return { ok: !error };
+}
+
+/** Update the studio's display name (shown on reports + settings). */
+export async function updateStudioName(name: string) {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false as const };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const };
+  const { error } = await supabase
+    .from("profiles")
+    .update({ studio_name: name.trim() || null })
+    .eq("id", user.id);
+  revalidatePath("/dashboard/settings");
+  return { ok: !error };
 }
 
 /* ------------------------------------------------- client recording */

@@ -20,6 +20,19 @@ create table if not exists public.projects (
 );
 create index if not exists projects_owner_idx on public.projects(owner);
 
+-- ---------- Plans, credits & due dates (re-runnable) ----------
+-- A studio's board allowance. `plan` free|pro (pro = unlimited boards);
+-- `credits` is the number of boards a non-pro studio may have at once (starts
+-- at 1 — the free board). Buying credits raises it; deleting a board frees a slot.
+alter table public.profiles add column if not exists plan text not null default 'free';
+alter table public.profiles add column if not exists credits int not null default 1;
+do $$ begin
+  alter table public.profiles add constraint profiles_plan_chk check (plan in ('free','pro'));
+exception when duplicate_object then null; end $$;
+
+-- Optional client deadline for a project.
+alter table public.projects add column if not exists due_date date;
+
 create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects(id) on delete cascade,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,7 +15,7 @@ import {
 import { Button, Tag } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { createClient as browserClient } from "@/lib/supabase/client";
-import { createBoard, saveOptions, type NewOption } from "@/lib/actions/projects";
+import { createBoard, getAccount, saveOptions, type NewOption } from "@/lib/actions/projects";
 import { dominantHexFromFile } from "@/lib/colour";
 import type { CategoryKind } from "@/lib/types";
 
@@ -49,6 +49,8 @@ export default function NewBoardPage() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [client, setClient] = useState("");
+  const [due, setDue] = useState("");
+  const [blocked, setBlocked] = useState(false);
   const [cats, setCats] = useState<Cat[]>(DEFAULT_CATS);
   const [active, setActive] = useState(0);
   const [draftCat, setDraftCat] = useState("");
@@ -59,6 +61,13 @@ export default function NewBoardPage() {
   const [copied, setCopied] = useState(false);
 
   const canNext = step === 0 ? name.trim().length > 0 : cats.length > 0;
+
+  // A Free studio gets one board; block the flow up front if they're out of slots.
+  useEffect(() => {
+    getAccount().then((a) => {
+      if (a && !a.canCreate) setBlocked(true);
+    });
+  }, []);
 
   function patchCat(i: number, patch: Partial<Cat>) {
     setCats((cs) => cs.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
@@ -120,8 +129,16 @@ export default function NewBoardPage() {
     const res = await createBoard({
       name: name || "New project",
       client,
+      due: due || undefined,
       categories: cats.map((c) => ({ name: c.name, kind: c.kind })),
     });
+
+    // Out of board slots — surface the upsell instead of a dead link.
+    if (!res.ok && res.reason === "limit") {
+      setSaving(false);
+      setBlocked(true);
+      return;
+    }
 
     // Demo mode / not signed in — skip persistence, still show a link.
     if (!res.ok) {
@@ -173,6 +190,34 @@ export default function NewBoardPage() {
 
   const cat = cats[active];
 
+  if (blocked) {
+    return (
+      <div className="mx-auto max-w-[520px]">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 text-[0.85rem] text-muted transition-colors hover:text-ink"
+        >
+          <ArrowLeft className="size-3.5" /> All boards
+        </Link>
+        <h1 className="mt-4 text-[2rem] font-semibold tracking-[-0.02em]">
+          You&apos;re out of board slots
+        </h1>
+        <p className="mt-2 max-w-[46ch] text-[0.95rem] text-muted">
+          Your plan&apos;s board allowance is used up. Buy a credit or go Pro to
+          set up another board.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button href="/dashboard/credits" variant="accent">
+            Get more board slots <ArrowRight className="size-4" />
+          </Button>
+          <Button href="/dashboard" variant="ghost">
+            Back to boards
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Link
@@ -219,6 +264,15 @@ export default function NewBoardPage() {
             <label className="block">
               <span className="mb-1.5 block text-[0.8rem] font-medium text-muted">Client (optional)</span>
               <input value={client} onChange={(e) => setClient(e.target.value)} placeholder="The Laurents" className={inputCls} />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[0.8rem] font-medium text-muted">Due date (optional)</span>
+              <input
+                type="date"
+                value={due}
+                onChange={(e) => setDue(e.target.value)}
+                className={inputCls}
+              />
             </label>
           </div>
         )}

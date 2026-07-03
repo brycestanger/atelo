@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { ClientLinkBar, FinishReport, ProjectActions } from "@/components/app/results";
+import {
+  ClientLinkBar,
+  FinishReport,
+  ProjectActions,
+  ProjectManageBar,
+} from "@/components/app/results";
 import { StatusBadge } from "@/components/app/dashboard-ui";
 import { PROJECTS, SAMPLE_BRIEF } from "@/lib/mock-data";
 import { buildReport, getBoard } from "@/lib/actions/projects";
@@ -44,8 +49,9 @@ export default async function ProjectPage({
         <ProjectActions projectId={id} />
       </header>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
         <ClientLinkBar slug={board?.slug ?? id} />
+        {board && <ProjectManageBar slug={board.slug} due={board.due ?? undefined} />}
       </div>
 
       <div className="mt-8">

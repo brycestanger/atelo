@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Sidebar, MobileTopbar } from "@/components/app/dashboard-ui";
 import { createClient } from "@/lib/supabase/server";
+import { getAccount } from "@/lib/actions/projects";
 
 export default async function DashboardLayout({
   children,
@@ -16,9 +17,11 @@ export default async function DashboardLayout({
     if (!user) redirect("/login");
   }
 
+  const account = await getAccount();
+
   return (
     <div className="min-h-screen bg-bg">
-      <Sidebar />
+      <Sidebar account={account} />
       <div className="lg:pl-60">
         <MobileTopbar />
         <main className="mx-auto max-w-[1100px] px-5 py-8 sm:px-8 sm:py-12">

@@ -1,13 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { LayoutGrid, Plus, Coins, Settings, ArrowUpRight } from "lucide-react";
-import type { Project, ProjectStatus } from "@/lib/types";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import {
+  LayoutGrid,
+  Plus,
+  Coins,
+  Settings,
+  ArrowUpRight,
+  Trash2,
+  Lock,
+} from "lucide-react";
+import type { Account, Project, ProjectStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button, Dot, Wordmark } from "@/components/ui";
 import { signOut } from "@/lib/actions/auth";
+import { deleteBoard } from "@/lib/actions/projects";
+
+/** ISO yyyy-mm-dd → "Jul 15" */
+function fmtDue(iso: string) {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 const NAV = [
   { label: "Boards", href: "/dashboard", icon: LayoutGrid },
@@ -16,8 +32,9 @@ const NAV = [
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ account }: { account?: Account | null }) {
   const path = usePathname();
+  const pro = account?.plan === "pro";
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-surface/60 px-4 py-6 lg:flex">
       <Link href="/" className="px-2">
@@ -50,14 +67,20 @@ export function Sidebar() {
       </nav>
       <div className="rounded-card border border-line bg-bg p-4">
         <div className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-muted">
-          Board credits
+          {pro ? "Plan" : "Board credits"}
         </div>
-        <div className="mt-1 flex items-baseline gap-1.5">
-          <span className="text-2xl font-semibold tnum">3</span>
-          <span className="text-[0.8rem] text-muted">left</span>
-        </div>
+        {pro ? (
+          <div className="mt-1 text-[1.05rem] font-semibold">Pro · Unlimited</div>
+        ) : (
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-2xl font-semibold tnum">{account?.remaining ?? 0}</span>
+            <span className="text-[0.8rem] text-muted">
+              of {account?.credits ?? 1} left
+            </span>
+          </div>
+        )}
         <Button href="/dashboard/credits" variant="ghost" size="sm" className="mt-3 w-full">
-          Buy more
+          {pro ? "Manage plan" : "Buy more"}
         </Button>
       </div>
       <button
@@ -110,18 +133,45 @@ export function StatusBadge({ status }: { status: ProjectStatus }) {
   );
 }
 
-export function ProjectCard({ p }: { p: Project }) {
+export function ProjectCard({
+  p,
+  onDelete,
+  busy,
+}: {
+  p: Project;
+  onDelete?: (slug: string) => void;
+  busy?: boolean;
+}) {
   const pct = Math.round(p.swipeProgress * 100);
   const precedents = p.categories.reduce((a, c) => a + c.count, 0);
   const when = p.updated.split("·").pop()?.trim();
   return (
     <Link
       href={`/dashboard/project/${p.id}`}
-      className="group flex min-h-[220px] flex-col rounded-card border border-line bg-surface p-5 transition-colors hover:border-ink/25"
+      className={cn(
+        "group relative flex min-h-[220px] flex-col rounded-card border border-line bg-surface p-5 transition-all hover:border-ink/25",
+        busy && "pointer-events-none opacity-50",
+      )}
     >
       <div className="flex items-center justify-between">
         <StatusBadge status={p.status} />
-        <ArrowUpRight className="size-4 text-faint transition-colors group-hover:text-ink" />
+        <div className="flex items-center gap-0.5">
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(p.id);
+              }}
+              aria-label={`Delete ${p.name}`}
+              className="grid size-7 place-items-center rounded-full text-faint opacity-0 transition-all hover:bg-accent/10 hover:text-accent focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
+          <ArrowUpRight className="size-4 text-faint transition-colors group-hover:text-ink" />
+        </div>
       </div>
       <h3 className="mt-4 text-[1.15rem] font-semibold tracking-[-0.01em]">
         {p.name}
@@ -149,13 +199,28 @@ export function ProjectCard({ p }: { p: Project }) {
         <span>
           {p.categories.length} cat · {precedents} imgs
         </span>
-        <span>{when}</span>
+        <span>{p.due ? `Due ${fmtDue(p.due)}` : when}</span>
       </div>
     </Link>
   );
 }
 
-function NewBoardCard() {
+function NewBoardCard({ canCreate = true }: { canCreate?: boolean }) {
+  if (!canCreate) {
+    return (
+      <Link
+        href="/dashboard/credits"
+        className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-card border border-dashed border-line px-4 text-center text-muted transition-colors hover:border-accent hover:text-accent"
+      >
+        <Lock className="size-6" strokeWidth={1.8} />
+        <span className="font-mono text-[0.66rem] uppercase leading-relaxed tracking-[0.12em]">
+          Out of board slots
+          <br />
+          Get more credits
+        </span>
+      </Link>
+    );
+  }
   return (
     <Link
       href="/dashboard/new"
@@ -176,8 +241,33 @@ const FILTERS = [
   { key: "ready", label: "Ready" },
 ];
 
-export function ProjectsBoard({ projects }: { projects: Project[] }) {
+export function ProjectsBoard({
+  projects,
+  account,
+}: {
+  projects: Project[];
+  account?: Account | null;
+}) {
   const [f, setF] = useState("all");
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  function handleDelete(slug: string) {
+    if (
+      !window.confirm(
+        "Delete this board? Its client link, every swipe, and the report are removed. This can't be undone.",
+      )
+    )
+      return;
+    setBusyId(slug);
+    startTransition(async () => {
+      await deleteBoard(slug);
+      setBusyId(null);
+      router.refresh();
+    });
+  }
+
   const shown =
     f === "all"
       ? projects
@@ -186,6 +276,7 @@ export function ProjectsBoard({ projects }: { projects: Project[] }) {
             p.status === f ||
             (f === "swiping" && p.status === "synthesizing"),
         );
+  const canCreate = account ? account.canCreate : true;
   return (
     <>
       <div className="flex flex-wrap items-center gap-1 border-b border-line pb-3">
@@ -207,9 +298,9 @@ export function ProjectsBoard({ projects }: { projects: Project[] }) {
         style={{ gridTemplateColumns: "repeat(auto-fill,minmax(270px,1fr))" }}
       >
         {shown.map((p) => (
-          <ProjectCard key={p.id} p={p} />
+          <ProjectCard key={p.id} p={p} onDelete={handleDelete} busy={busyId === p.id} />
         ))}
-        {f === "all" && <NewBoardCard />}
+        {f === "all" && <NewBoardCard canCreate={canCreate} />}
       </div>
     </>
   );

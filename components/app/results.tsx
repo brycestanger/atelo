@@ -1,10 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import { Download, Link2, Check, Copy } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Download, Link2, Check, Copy, CalendarClock, Trash2 } from "lucide-react";
 import type { Brief } from "@/lib/types";
 import { Button } from "@/components/ui";
 import { ProfileCard } from "@/components/app/profile-card";
+import { deleteBoard, setDueDate } from "@/lib/actions/projects";
+
+/** Board management on the project page: set/clear the client due date, or
+ *  permanently delete the board. Both hit the server actions directly. */
+export function ProjectManageBar({ slug, due }: { slug: string; due?: string | null }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [d, setD] = useState(due ?? "");
+  const [savedDue, setSavedDue] = useState(false);
+
+  function saveDue(next: string) {
+    setD(next);
+    start(async () => {
+      await setDueDate(slug, next || null);
+      setSavedDue(true);
+      router.refresh();
+      setTimeout(() => setSavedDue(false), 1500);
+    });
+  }
+
+  function remove() {
+    if (
+      !window.confirm(
+        "Delete this board? Its client link, every swipe, and the report are removed. This can't be undone.",
+      )
+    )
+      return;
+    start(async () => {
+      await deleteBoard(slug);
+      router.push("/dashboard");
+    });
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 print:hidden">
+      <label className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.85rem] shadow-soft">
+        <CalendarClock className="size-4 text-muted" />
+        <span className="text-muted">Due</span>
+        <input
+          type="date"
+          value={d}
+          onChange={(e) => saveDue(e.target.value)}
+          className="bg-transparent text-[0.85rem] outline-none [color-scheme:light]"
+        />
+        {savedDue && <Check className="size-3.5 text-accent" />}
+      </label>
+      <button
+        onClick={remove}
+        disabled={pending}
+        className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.85rem] text-muted transition-colors hover:border-accent/40 hover:text-accent disabled:opacity-50"
+      >
+        <Trash2 className="size-4" /> Delete board
+      </button>
+    </div>
+  );
+}
 
 /** The board's permanent client link — same URL for the life of the project.
  *  Surfaced on the board page so it's always retrievable, never regenerated. */

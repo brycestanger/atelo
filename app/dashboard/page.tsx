@@ -1,8 +1,7 @@
 import { ArrowRight, Send, Sparkles, Smartphone, SquarePen } from "lucide-react";
 import { ProjectsBoard } from "@/components/app/dashboard-ui";
 import { Button, Dot } from "@/components/ui";
-import { PROJECTS } from "@/lib/mock-data";
-import { listMyBoards } from "@/lib/actions/projects";
+import { getAccount, listMyBoards } from "@/lib/actions/projects";
 
 export const metadata = { title: "Boards" };
 
@@ -86,16 +85,18 @@ function Onboarding() {
 }
 
 export default async function DashboardPage() {
-  const real = await listMyBoards(); // null only in demo mode (Supabase not configured)
+  const [real, account] = await Promise.all([listMyBoards(), getAccount()]);
+  const projects = real ?? [];
 
-  // Signed-in studio with no boards yet → the intro, never mock clutter.
-  if (real !== null && real.length === 0) {
+  // No boards yet (new studio, or demo mode) → the intro, never mock clutter.
+  if (projects.length === 0) {
     return <Onboarding />;
   }
 
-  // Real boards when signed in; the sample set only in the unauthenticated demo.
-  const projects = real ?? PROJECTS;
   const ready = projects.filter((p) => p.status === "ready").length;
+  const canCreate = account ? account.canCreate : true;
+  const showSlots = account && account.plan !== "pro";
+  const remaining = account?.remaining ?? 0;
 
   return (
     <>
@@ -105,14 +106,23 @@ export default async function DashboardPage() {
           <p className="mt-1 text-[0.92rem] text-muted">
             {projects.length} {projects.length === 1 ? "project" : "projects"} ·{" "}
             {ready} ready to present
+            {showSlots
+              ? ` · ${remaining} board ${remaining === 1 ? "slot" : "slots"} left`
+              : ""}
           </p>
         </div>
-        <Button href="/dashboard/new" variant="primary">
-          New board
-        </Button>
+        {canCreate ? (
+          <Button href="/dashboard/new" variant="primary">
+            New board
+          </Button>
+        ) : (
+          <Button href="/dashboard/credits" variant="primary">
+            Get a board slot
+          </Button>
+        )}
       </header>
       <div className="mt-8">
-        <ProjectsBoard projects={projects} />
+        <ProjectsBoard projects={projects} account={account} />
       </div>
     </>
   );
