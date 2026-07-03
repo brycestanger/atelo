@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy, Heart, Plus, X } from "lucide-react";
 import { SAMPLE_BRIEF } from "@/lib/mock-data";
@@ -131,7 +131,6 @@ function StepVisual({ step }: { step: number }) {
 /** Chronicle-style scroll-active section: a sticky visual that crossfades as
  *  the matching step scrolls into the middle of the viewport. */
 export function Showcase() {
-  const reduce = useReducedMotion() ?? false;
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -168,14 +167,14 @@ export function Showcase() {
             <div className="panel relative flex h-[360px] items-center justify-center overflow-hidden rounded-[30px] p-6 sm:h-[440px] lg:h-[500px]">
               <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full glow-warm opacity-70 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-24 -left-16 size-64 rounded-full glow-cool opacity-50 blur-3xl" />
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
                   className="absolute inset-0 flex items-center justify-center p-6"
-                  initial={reduce ? false : { opacity: 0, scale: 1.05, y: 14 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: -14 }}
-                  transition={{ duration: 0.75, ease: [0.33, 0, 0.2, 1] }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
                 >
                   <div className="w-full max-w-[360px]">
                     <StepVisual step={active} />

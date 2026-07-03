@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type Colour = { name: string; hex: string; meta: string };
@@ -311,8 +311,8 @@ export function HookReelBig() {
 }
 
 const SLOTS = 5;
-const INTERVAL = 2200; // > throw + ghost travel + pop, so cycles never overlap
-const COMMIT_MS = 460; // when the flying ghost "arrives" and the slot receives it
+const BEAT = 2600;   // ms between swipes — an unhurried, premium cadence
+const DROP_MS = 520; // when the swiped colour lands in its palette slot
 
 /* -------------------------------------------------------------------------- */
 /* Card face — pure static markup. Always render-safe (no motion, no JS gate). */
@@ -340,24 +340,23 @@ function CardFace({ c }: { c: Colour }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Palette slot. Empty base always painted (reads without JS). When a colour   */
-/* lands it pops in (spring overshoot) with a snap flash + accent glow.        */
-/* `popKey` remounts the swatch so re-filling an index re-triggers the pop.     */
+/* Palette slot. Empty base always painted. When a colour lands it pops in:    */
+/* a spring scale-overshoot + accent ring bloom in full mode, a soft fade in   */
+/* calm (reduced-motion) mode. `popKey` remounts the swatch so re-filling an   */
+/* index re-triggers the pop.                                                   */
 /* -------------------------------------------------------------------------- */
 function Slot({
   c,
   popKey,
-  reduce,
-  slotRef,
+  full,
 }: {
   c: Colour | undefined;
   popKey: number;
-  reduce: boolean;
-  slotRef?: (el: HTMLDivElement | null) => void;
+  full: boolean;
 }) {
   return (
-    <div ref={slotRef} className="relative aspect-square flex-1">
-      {/* empty base — always present so the row reads even before/without JS */}
+    <div className="relative aspect-square flex-1">
+      {/* empty base — always present so the row reads before it fills */}
       <div className="absolute inset-0 rounded-2xl bg-[rgba(0,0,0,0.05)] ring-1 ring-inset ring-black/[0.06]" />
       <AnimatePresence>
         {c && (
@@ -365,32 +364,23 @@ function Slot({
             key={`${c.hex}-${popKey}`}
             className="absolute inset-0 overflow-hidden rounded-2xl ring-1 ring-inset ring-black/10"
             style={{ background: c.hex }}
-            initial={reduce ? false : { scale: 0.4, opacity: 0 }}
+            initial={full ? { scale: 0.35, opacity: 0 } : { scale: 0.94, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2, ease: EASE } }}
             transition={
-              reduce
-                ? { duration: 0 }
-                : { type: "spring", stiffness: 460, damping: 18, mass: 0.7 }
+              full
+                ? { type: "spring", stiffness: 520, damping: 20, mass: 0.8 }
+                : { duration: 0.5, ease: EASE }
             }
           >
-            {!reduce && (
-              <>
-                {/* white snap flash */}
-                <motion.span
-                  className="pointer-events-none absolute inset-0 rounded-2xl"
-                  style={{ boxShadow: "0 0 0 3px rgba(255,255,255,0.9) inset" }}
-                  initial={{ opacity: 0.9 }}
-                  animate={{ opacity: 0 }}
-                  transition={{ duration: 0.5, ease: EASE }}
-                />
-                {/* brand accent glow ring blooms then fades */}
-                <motion.span
-                  className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-accent"
-                  initial={{ opacity: 0.85, scale: 1.14 }}
-                  animate={{ opacity: 0, scale: 1 }}
-                  transition={{ duration: 0.6, ease: EASE }}
-                />
-              </>
+            {full && (
+              /* brand accent ring blooms out then fades — the "it landed" pop */
+              <motion.span
+                className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-accent"
+                initial={{ opacity: 0.85, scale: 1.28 }}
+                animate={{ opacity: 0, scale: 1 }}
+                transition={{ duration: 0.6, ease: EASE }}
+              />
             )}
           </motion.div>
         )}
@@ -402,34 +392,27 @@ function Slot({
 export function HookHero() {
   const reduce = useReducedMotion() ?? false;
 
-  // Hydration-safe: content is NEVER gated on this — only autoplay + motion.
+  // `mounted` keeps the first render identical on server + client (both false),
+  // so hydration never mismatches; the entrance and motion mode switch on after.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const [step, setStep] = useState(0); // advances one card per fling
+  const [step, setStep] = useState(0); // advances one card per swipe
   const [committed, setCommitted] = useState(0); // advances when a colour lands
-  const active = mounted && !reduce;
-
-  // Per-slot rising key so re-filling an index re-pops it.
   const [popKeys, setPopKeys] = useState<number[]>(() =>
     Array.from({ length: SLOTS }, () => 0),
   );
 
-  // The flying ghost swatch (Ghost-to-slot). null between flings.
-  const [ghost, setGhost] = useState<{
-    hex: string;
-    to: { x: number; y: number };
-    id: number;
-  } | null>(null);
+  // full = large, kinetic motion (fling + spring pop). Otherwise a calm cross-
+  // dissolve that STILL cycles — reduced-motion users get a living hero with no
+  // vestibular motion. The autoplay loop runs in both modes; visuals differ.
+  const full = mounted && !reduce;
 
   const n = COLOURS.length;
   const current = COLOURS[step % n];
   const peek = COLOURS[(step + 1) % n];
   // Mostly "Love" (it's a palette you're keeping); an occasional "Pass" for life.
   const dir = step % 5 === 4 ? -1 : 1;
-
-  const originRef = useRef<HTMLDivElement>(null); // where the ghost is born
-  const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Palette = trailing window of the last SLOTS committed colours (newest last).
   // Derived purely from `committed`, so it can never drift from the animation.
@@ -441,136 +424,86 @@ export function HookHero() {
     return out;
   }, [committed, n]);
 
-  // Where the NEXT colour lands: first empty slot, else the last (after shift).
-  const targetIndex = committed < SLOTS ? committed : SLOTS - 1;
-
-  // Latest values live in a ref so the interval effect mounts ONCE and never
-  // tears down / re-creates each cycle (avoids timing drift + double fires).
-  const tickRef = useRef<() => void>(() => {});
-  tickRef.current = () => {
-    // Measure exact origin -> target slot delta (transform-only travel).
-    const origin = originRef.current;
-    const target = slotRefs.current[targetIndex];
-    if (origin && target) {
-      const oR = origin.getBoundingClientRect();
-      const tR = target.getBoundingClientRect();
-      const dx = tR.left + tR.width / 2 - (oR.left + oR.width / 2);
-      const dy = tR.top + tR.height / 2 - (oR.top + oR.height / 2);
-      setGhost({ hex: current.hex, to: { x: dx, y: dy }, id: step });
-    }
-    setStep((v) => v + 1);
-  };
-
+  // Autoplay: swipe now, land the colour a beat later so its slot pops in sync.
+  // One interval for the whole lifetime — no per-cycle teardown, no drift.
   useEffect(() => {
-    if (!active) return;
-    let raf = 0;
-    let commitTimer = 0;
-
+    if (!mounted) return;
+    let land = 0;
     const id = window.setInterval(() => {
-      // Fling the card + launch the ghost on the next frame (post-measure).
-      raf = window.requestAnimationFrame(() => tickRef.current());
-      // The colour "arrives": commit it so the receiving slot pops in sync.
-      commitTimer = window.setTimeout(() => {
-        setCommitted((c) => c + 1);
-        setGhost(null);
-      }, COMMIT_MS);
-    }, INTERVAL);
-
+      setStep((v) => v + 1);
+      land = window.setTimeout(() => setCommitted((c) => c + 1), DROP_MS);
+    }, BEAT);
     return () => {
       window.clearInterval(id);
-      window.cancelAnimationFrame(raf);
-      window.clearTimeout(commitTimer);
+      window.clearTimeout(land);
     };
-  }, [active]);
+  }, [mounted]);
 
-  // Bump the receiving slot's popKey exactly when a colour commits, so the
-  // slot's spring-pop + glow fire as the ghost snaps home.
+  // Pop the receiving slot exactly when a colour lands.
   useEffect(() => {
     if (committed === 0) return;
-    const idx = committed - 1 < SLOTS ? committed - 1 : SLOTS - 1;
+    const idx = Math.min(committed - 1, SLOTS - 1);
     setPopKeys((k) => {
       const copy = k.slice();
-      copy[idx] = copy[idx] + 1;
+      copy[idx] += 1;
       return copy;
     });
   }, [committed]);
 
-  // Reduced-motion / no-JS view: a pre-filled palette so it never looks empty.
-  const staticPalette = useMemo(() => COLOURS.slice(0, SLOTS), []);
-  // Hydration-safe: `reduce` (useReducedMotion) is false on the server but the
-  // real value on the client, so branching the FIRST render on it mismatches.
-  // Until mounted we render the dynamic base on both sides; then switch.
-  const showStatic = mounted && reduce;
+  const filled = Math.min(palette.length, SLOTS);
 
   return (
     <div className="mx-auto flex w-full max-w-[380px] flex-col items-stretch">
       {/* -------- Card stage -------- */}
       <div className="relative aspect-[3/4] w-full">
-        {/* Peek card underneath — reveals the next colour as the top card leaves. */}
-        {!showStatic && (
-          <div
-            aria-hidden
-            className="absolute inset-0 translate-y-3 scale-[0.955] opacity-70"
-          >
-            <CardFace c={peek} />
-          </div>
-        )}
-
-        {/* Invisible origin marker: bottom-left of the card, where the ghost is born. */}
+        {/* Peek card underneath — the next colour, giving depth + continuity. */}
         <div
-          ref={originRef}
           aria-hidden
-          className="pointer-events-none absolute bottom-7 left-7 h-10 w-10"
-        />
+          className="absolute inset-0 translate-y-3 scale-[0.955] opacity-70"
+        >
+          <CardFace c={peek} />
+        </div>
 
-        <AnimatePresence initial={false} custom={dir}>
+        {/* One card on screen at a time — old leaves, THEN new arrives. No overlap. */}
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={showStatic ? "static" : `${current.hex}-${step}`}
+            key={step}
             className="absolute inset-0"
             style={{ zIndex: 2 }}
-            initial={showStatic ? false : { scale: 0.94, y: -14, opacity: 0 }}
+            initial={full ? { scale: 0.94, y: -14, opacity: 0 } : { opacity: 0 }}
             animate={
-              showStatic
-                ? { scale: 1, y: 0, opacity: 1 }
-                : {
-                    // Lift + scale-overshoot: the springy "ready to throw" beat.
+              full
+                ? {
+                    // Lift + scale-overshoot: the springy "settling in" beat.
                     scale: [0.94, 1.035, 1],
-                    y: [-14, -6, 0],
-                    x: 0,
-                    rotate: 0,
+                    y: [-14, -4, 0],
                     opacity: 1,
                   }
+                : { scale: 1, y: 0, opacity: 1 }
             }
             exit={
-              showStatic
-                ? { opacity: 0 }
-                : {
-                    // The throw: spring fling with rotation + a touch of scale-up.
+              full
+                ? {
+                    // The throw: a quick, accelerating fling off the side.
                     x: dir * 560,
-                    y: -40,
-                    rotate: dir * 16,
-                    scale: 1.04,
+                    y: -30,
+                    rotate: dir * 14,
                     opacity: 0,
-                    transition: {
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 26,
-                      mass: 0.9,
-                      opacity: { duration: 0.32, ease: EASE },
-                    },
+                    transition: { duration: 0.4, ease: [0.5, 0, 0.75, 0] },
                   }
+                : { opacity: 0, transition: { duration: 0.4, ease: EASE } }
             }
             transition={{
-              duration: 0.5,
+              duration: 0.55,
               ease: EASE,
-              scale: { duration: 0.5, ease: EASE, times: [0, 0.55, 1] },
-              y: { duration: 0.5, ease: EASE, times: [0, 0.55, 1] },
+              scale: { duration: 0.55, ease: EASE, times: [0, 0.55, 1] },
+              y: { duration: 0.55, ease: EASE, times: [0, 0.55, 1] },
             }}
           >
             <div className="relative h-full w-full">
               <CardFace c={current} />
-              {/* Love / Pass stamp that pops as the card commits. */}
-              {!showStatic && (
+              {/* Love / Pass stamp that pops as the card settles (full only). */}
+              {full && (
                 <motion.span
                   className={cn(
                     "pointer-events-none absolute top-6 rounded-xl border-[2.5px] px-3.5 py-1.5 text-[0.95rem] font-bold uppercase tracking-[0.14em]",
@@ -579,13 +512,10 @@ export function HookHero() {
                       : "left-6 rotate-[14deg] border-white/85 text-white/90",
                   )}
                   initial={{ opacity: 0, scale: 1.6 }}
-                  animate={{
-                    opacity: [0, 1, 1, 0.9],
-                    scale: [1.6, 0.92, 1, 1],
-                  }}
+                  animate={{ opacity: [0, 1, 1, 0.9], scale: [1.6, 0.92, 1, 1] }}
                   transition={{
-                    duration: 0.55,
-                    delay: 0.12,
+                    duration: 0.5,
+                    delay: 0.1,
                     ease: EASE,
                     times: [0, 0.4, 0.7, 1],
                   }}
@@ -596,33 +526,6 @@ export function HookHero() {
             </div>
           </motion.div>
         </AnimatePresence>
-
-        {/* -------- The flying ghost swatch (Ghost-to-slot) -------- */}
-        <AnimatePresence>
-          {ghost && !showStatic && (
-            <motion.div
-              key={ghost.id}
-              aria-hidden
-              className="pointer-events-none absolute bottom-7 left-7 z-30 h-10 w-10 rounded-xl shadow-soft ring-2 ring-white/70"
-              style={{ background: ghost.hex }}
-              initial={{ x: 0, y: 0, scale: 1, opacity: 0, rotate: -6 }}
-              animate={{
-                x: ghost.to.x,
-                y: ghost.to.y,
-                // Anticipation bulge, then shrink to slot size on arrival.
-                scale: [1, 1.12, 0.62],
-                opacity: [0, 1, 1],
-                rotate: [-6, 4, 0],
-              }}
-              exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.12 } }}
-              transition={{
-                duration: COMMIT_MS / 1000,
-                ease: [0.5, 0, 0.2, 1],
-                opacity: { duration: 0.18, ease: EASE },
-              }}
-            />
-          )}
-        </AnimatePresence>
       </div>
 
       {/* -------- Palette strip -------- */}
@@ -632,20 +535,12 @@ export function HookHero() {
             Your palette
           </span>
           <span className="text-[0.72rem] font-medium tabular-nums text-faint">
-            {showStatic ? SLOTS : Math.min(palette.length, SLOTS)}/{SLOTS}
+            {filled}/{SLOTS}
           </span>
         </div>
         <div className="mt-2.5 flex gap-2.5">
           {Array.from({ length: SLOTS }).map((_, idx) => (
-            <Slot
-              key={idx}
-              slotRef={(el) => {
-                slotRefs.current[idx] = el;
-              }}
-              c={showStatic ? staticPalette[idx] : palette[idx]}
-              popKey={popKeys[idx]}
-              reduce={showStatic}
-            />
+            <Slot key={idx} c={palette[idx]} popKey={popKeys[idx]} full={full} />
           ))}
         </div>
       </div>
