@@ -182,3 +182,130 @@ export function HookReel() {
     </div>
   );
 }
+
+/* -------- Deck concept B — The Build: each pick flies up into a palette */
+export function HookDeckBuild() {
+  const reduce = useReducedMotion() ?? false;
+  const [i, setI] = useState(0);
+  const [palette, setPalette] = useState<Colour[]>([]);
+
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => setI((v) => v + 1), 1700);
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  useEffect(() => {
+    if (i === 0) return;
+    const c = COLOURS[(i - 1) % COLOURS.length];
+    setPalette((p) => [...p.slice(-4), c]);
+  }, [i]);
+
+  const n = COLOURS.length;
+  const cur = COLOURS[i % n];
+  const peek = COLOURS[(i + 1) % n];
+
+  return (
+    <div className="mx-auto flex w-full max-w-[360px] flex-col">
+      <div className="relative aspect-[3/4] w-full">
+        <div className="absolute inset-0 translate-y-3 scale-[0.96] opacity-70">
+          <Face c={peek} />
+        </div>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={`${cur.hex}-${i}`}
+            className="absolute inset-0"
+            initial={reduce ? false : { scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={
+              reduce
+                ? { opacity: 0 }
+                : { y: -340, opacity: 0, scale: 0.9, transition: { duration: 0.5, ease: EASE } }
+            }
+          >
+            <Face c={cur} stamp="LOVE" />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="mt-5">
+        <div className="text-[0.72rem] uppercase tracking-[0.12em] text-muted">
+          Your palette
+        </div>
+        <div className="mt-2 flex gap-2">
+          {Array.from({ length: 5 }).map((_, idx) => {
+            const c = palette[idx];
+            return (
+              <motion.span
+                key={idx}
+                className="h-12 flex-1 rounded-xl ring-1 ring-black/5"
+                initial={false}
+                animate={{ backgroundColor: c ? c.hex : "rgba(0,0,0,0.05)" }}
+                transition={{ duration: 0.5, ease: EASE }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------- The Reel (big): full-white, 5 columns, click to lock the line */
+export function HookReelBig() {
+  const [locked, setLocked] = useState(false);
+  const cols = [0, 1, 2, 3, 4].map((ci) => {
+    const rot = (ci * 2) % COLOURS.length;
+    return [...COLOURS.slice(rot), ...COLOURS.slice(0, rot)];
+  });
+
+  return (
+    <button
+      type="button"
+      onClick={() => setLocked((v) => !v)}
+      aria-pressed={locked}
+      className="group relative block w-full cursor-pointer overflow-hidden rounded-[32px] bg-surface text-left shadow-soft"
+      style={{ height: "min(76vh, 720px)" }}
+    >
+      <div className="grid h-full grid-cols-5 gap-3 p-3">
+        {cols.map((col, ci) => (
+          <div key={ci} className="relative overflow-hidden">
+            <div
+              className="reel-track flex flex-col gap-3"
+              style={{
+                animationDuration: `${18 + ci * 4}s`,
+                animationDirection: ci % 2 ? "reverse" : "normal",
+                animationPlayState: locked ? "paused" : "running",
+              }}
+            >
+              {[...col, ...col].map((c, idx) => (
+                <div
+                  key={idx}
+                  className="aspect-square shrink-0 rounded-2xl"
+                  style={{ background: c.hex }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-surface via-surface/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
+
+      <div className="pointer-events-none absolute inset-x-6 top-1/2 -translate-y-1/2">
+        <div
+          className={cn(
+            "h-1.5 rounded-full transition-all duration-300",
+            locked
+              ? "bg-accent shadow-[0_0_28px_rgba(255,79,0,0.65)]"
+              : "bg-ink/10 group-hover:bg-ink/25",
+          )}
+        />
+      </div>
+
+      <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-ink/90 px-4 py-2 text-[0.82rem] font-medium text-white backdrop-blur">
+        {locked ? "Locked — click to release" : "Click to lock your line"}
+      </div>
+    </button>
+  );
+}
