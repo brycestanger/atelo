@@ -17,13 +17,28 @@ export async function signUpUser(email: string, password: string) {
     password,
     email_confirm: true,
   });
-  if (error) {
-    if (/already|registered|exists/i.test(error.message)) {
+  if (!error) return { ok: true as const, existed: false };
+
+  // Account already exists (e.g. a passwordless user left over from an earlier
+  // magic-link attempt). Set the password + confirm so sign-in works.
+  // NOTE: before launch, gate this behind a real "forgot password" flow —
+  // here "sign up" doubles as "set password", which is fine for early testing.
+  if (/already|registered|exists/i.test(error.message)) {
+    const { data } = await admin.auth.admin.listUsers();
+    const existing = data?.users?.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase(),
+    );
+    if (existing) {
+      const { error: upErr } = await admin.auth.admin.updateUserById(existing.id, {
+        password,
+        email_confirm: true,
+      });
+      if (upErr) return { ok: false as const, reason: upErr.message };
       return { ok: true as const, existed: true };
     }
-    return { ok: false as const, reason: error.message };
+    return { ok: false as const, reason: "Account exists — please sign in." };
   }
-  return { ok: true as const, existed: false };
+  return { ok: false as const, reason: error.message };
 }
 
 export async function signOut() {
