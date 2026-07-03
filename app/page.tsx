@@ -1,7 +1,7 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-chrome";
 import { TestSwipe, ReportPreview } from "@/components/product-mock";
-import { HookDeck } from "@/components/landing/hooks";
+import { HookHero } from "@/components/landing/hooks";
 import { Showcase } from "@/components/landing/showcase";
 import { Button, Dot } from "@/components/ui";
 
@@ -74,7 +74,7 @@ function Hero() {
         <div className="rise" style={{ animationDelay: "0.2s" }}>
           <div className="relative">
             <div className="pointer-events-none absolute -inset-8 -z-10 rounded-full glow-warm opacity-40 blur-3xl" />
-            <HookDeck />
+            <HookHero />
           </div>
         </div>
       </div>

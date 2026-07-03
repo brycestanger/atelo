@@ -168,19 +168,20 @@ export function Showcase() {
             <div className="panel relative flex h-[360px] items-center justify-center overflow-hidden rounded-[30px] p-6 sm:h-[440px] lg:h-[500px]">
               <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full glow-warm opacity-70 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-24 -left-16 size-64 rounded-full glow-cool opacity-50 blur-3xl" />
-              <div className="relative w-full max-w-[360px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={active}
-                    initial={reduce ? false : { opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduce ? { opacity: 0 } : { opacity: 0, y: -16 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  >
+              <AnimatePresence>
+                <motion.div
+                  key={active}
+                  className="absolute inset-0 flex items-center justify-center p-6"
+                  initial={reduce ? false : { opacity: 0, scale: 1.05, y: 14 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: -14 }}
+                  transition={{ duration: 0.75, ease: [0.33, 0, 0.2, 1] }}
+                >
+                  <div className="w-full max-w-[360px]">
                     <StepVisual step={active} />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
