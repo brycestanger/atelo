@@ -1,8 +1,8 @@
-import { ArrowRight, Link2 } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-chrome";
 import { DemoSlider, TestSwipe, ReportPreview } from "@/components/product-mock";
-import { Button, Dot, Reveal } from "@/components/ui";
-import { CATEGORIES } from "@/lib/mock-data";
+import { Showcase } from "@/components/landing/showcase";
+import { Button, Dot } from "@/components/ui";
 
 export default function LandingPage() {
   return (
@@ -10,11 +10,10 @@ export default function LandingPage() {
       <SiteNav />
       <main className="overflow-clip">
         <Hero />
-        <ProofBand />
-        <DemoSection />
-        <HowItWorks />
-        <Features />
-        <ReportSection />
+        <Trust />
+        <Showcase />
+        <TryIt />
+        <ReportShowcase />
         <Pricing />
       </main>
       <SiteFooter />
@@ -25,70 +24,74 @@ export default function LandingPage() {
 /* ------------------------------------------------------------------ Hero */
 function Hero() {
   return (
-    <section className="relative mx-auto max-w-[1200px] px-5 pb-14 pt-28 sm:px-8 sm:pt-32">
-      <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-        <div>
-          <Reveal>
-            <span className="inline-flex items-center gap-2 text-[0.92rem] font-medium text-muted">
-              <Dot /> Signal over noise
-            </span>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <h1 className="mt-5 text-[clamp(2.5rem,6vw,4.5rem)] font-semibold leading-[0.98] tracking-[-0.03em]">
-              Turn client swipes into a finish report
-              <span className="text-accent">.</span>
-            </h1>
-          </Reveal>
-          <Reveal delay={0.12}>
-            <p className="mt-6 max-w-[46ch] text-[1.05rem] leading-relaxed text-muted">
-              Send one link. Your client swipes through colours, countertops,
-              lighting and fixtures on their phone — about five minutes — and Atelo
-              hands you a client-ready report to send right back.
-            </p>
-          </Reveal>
-          <Reveal delay={0.18}>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Button href="/dashboard" size="lg" variant="primary">
-                Start free
-                <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Button>
-              <Button
-                href="/dashboard/project/kerrisdale-kitchen"
-                size="lg"
-                variant="ghost"
-              >
-                See a live report
-              </Button>
-            </div>
-          </Reveal>
-          <Reveal delay={0.24}>
-            <p className="mt-6 text-[0.85rem] text-faint">
-              Free first board · No card required · No login for your client
-            </p>
-          </Reveal>
-        </div>
+    <section className="relative overflow-hidden px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-[-12%] size-[620px] -translate-x-1/2 rounded-full glow-warm opacity-70 blur-[110px]" />
+        <div className="absolute right-[6%] top-[24%] size-[380px] rounded-full glow-cool opacity-50 blur-[90px]" />
+        <div className="absolute left-[4%] top-[42%] size-[300px] rounded-full glow-peach opacity-40 blur-[90px]" />
+      </div>
 
-        <Reveal delay={0.1} className="lg:justify-self-end">
-          <div className="flex flex-col items-center">
-            <TestSwipe />
+      <div className="mx-auto max-w-[880px] text-center">
+        <div className="rise">
+          <span className="inline-flex items-center gap-2 rounded-full bg-surface/80 px-3.5 py-1.5 text-[0.85rem] font-medium text-muted shadow-soft backdrop-blur">
+            <Dot /> Signal over noise
+          </span>
+        </div>
+        <h1
+          className="rise mt-6 text-[clamp(2.6rem,6.5vw,5rem)] font-semibold leading-[0.96] tracking-[-0.035em]"
+          style={{ animationDelay: "0.08s" }}
+        >
+          Turn client swipes into a finish report
+          <span className="text-accent">.</span>
+        </h1>
+        <p
+          className="rise mx-auto mt-6 max-w-[54ch] text-[1.1rem] leading-relaxed text-muted"
+          style={{ animationDelay: "0.16s" }}
+        >
+          Send one link. Your client swipes through colours, countertops, lighting
+          and fixtures on their phone — and Atelo hands you a client-ready report to
+          send right back.
+        </p>
+        <div
+          className="rise mt-9 flex flex-wrap items-center justify-center gap-3"
+          style={{ animationDelay: "0.24s" }}
+        >
+          <Button href="/dashboard" size="lg" variant="accent">
+            Start free
+            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Button>
+          <Button href="/dashboard/project/kerrisdale-kitchen" size="lg" variant="ghost">
+            See a live report
+          </Button>
+        </div>
+        <p className="rise mt-5 text-[0.85rem] text-faint" style={{ animationDelay: "0.32s" }}>
+          Free first board · No card required · No login for your client
+        </p>
+      </div>
+
+      <div className="rise mx-auto mt-16 max-w-[1060px]" style={{ animationDelay: "0.42s" }}>
+        <div className="relative">
+          <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[44px] glow-peach opacity-45 blur-3xl" />
+          <div className="panel rounded-[32px] p-4 shadow-float sm:p-8">
+            <DemoSlider />
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------- Proof band */
-const PROOF = ["Architecture", "Interiors", "Kitchen & bath", "New builds", "Renovations"];
+/* ------------------------------------------------------------- Trust strip */
+const TRUST = ["Architecture", "Interiors", "Kitchen & bath", "New builds", "Renovations"];
 
-function ProofBand() {
+function Trust() {
   return (
-    <section>
-      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-8 gap-y-3 px-5 py-8 sm:px-8">
+    <section className="mx-auto max-w-[1100px] px-5 pb-6 sm:px-8">
+      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
         <span className="text-[0.85rem] text-faint">Built for the way studios work —</span>
-        {PROOF.map((p) => (
-          <span key={p} className="text-[0.9rem] font-medium text-muted">
-            {p}
+        {TRUST.map((t) => (
+          <span key={t} className="text-[0.9rem] font-medium text-muted">
+            {t}
           </span>
         ))}
       </div>
@@ -96,211 +99,61 @@ function ProofBand() {
   );
 }
 
-/* --------------------------------------------------------- Demo (moved down) */
-function DemoSection() {
+/* --------------------------------------------------------------- Try it */
+function TryIt() {
   return (
     <section
       id="product"
-      className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-24 sm:px-8 sm:py-28"
+      className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-16 sm:px-8 sm:py-20"
     >
-      <Reveal className="mx-auto max-w-[46ch] text-center">
-        <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-          Set it up. Send it. Read the report.
+      <div className="panel relative overflow-hidden rounded-[36px] p-8 shadow-soft sm:p-14">
+        <div className="pointer-events-none absolute -left-24 -top-24 size-80 rounded-full glow-warm opacity-60 blur-3xl" />
+        <div className="relative grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+          <div className="max-w-[46ch]">
+            <span className="inline-flex items-center gap-2 text-[0.9rem] font-medium text-accent">
+              <Sparkles className="size-4" /> Try it right now
+            </span>
+            <h2 className="mt-4 text-[clamp(2rem,4.5vw,3.2rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+              This is the whole client experience.
+            </h2>
+            <p className="mt-5 text-[1.05rem] leading-relaxed text-muted">
+              Go ahead — swipe a few exterior colours. Love it, or pass. Your client
+              does exactly this, on their phone, for every category you set up. No
+              account, no learning curve.
+            </p>
+            <div className="mt-7">
+              <Button href="/c/kerrisdale-kitchen" variant="ghost">
+                Open the full client demo <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="justify-self-center">
+            <TestSwipe />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ----------------------------------------------------------- Report showcase */
+function ReportShowcase() {
+  return (
+    <section className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 sm:py-20">
+      <div className="mx-auto max-w-[52ch] text-center">
+        <h2 className="text-[clamp(2rem,4.5vw,3.2rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+          Send a report, not a guessing game.
         </h2>
         <p className="mt-5 text-[1.05rem] leading-relaxed text-muted">
-          The whole flow, start to finish — drag the slider, or let it play.
+          Nobody wants to read about the process. They want the answer — laid out,
+          on-brand, and ready to present.
         </p>
-      </Reveal>
-      <Reveal delay={0.08} className="mx-auto mt-12 max-w-[1060px]">
-        <div className="panel rounded-[30px] p-4 sm:p-8">
-          <DemoSlider />
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------ How it works */
-const STEPS = [
-  {
-    n: "01",
-    title: "Set up the board",
-    body: "Name the project, add the categories you care about, and drop in your options — photos or colour swatches.",
-  },
-  {
-    n: "02",
-    title: "Send one link",
-    body: "Text or email a single link. No login, no app to install — it just opens on your client's phone.",
-  },
-  {
-    n: "03",
-    title: "They swipe",
-    body: "Colours, countertops, lighting, tile, fixtures. Favourites face off head-to-head until one wins each category.",
-  },
-  {
-    n: "04",
-    title: "Get the report",
-    body: "A client-ready finish report lands on your dashboard — palette, picks, and takeaways. Export to PDF and send.",
-  },
-];
-
-function HowItWorks() {
-  return (
-    <section id="how" className="scroll-mt-24">
-      <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
-        <Reveal className="max-w-[44ch]">
-          <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-            From first idea to client-ready, in an afternoon.
-          </h2>
-        </Reveal>
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.n} delay={i * 0.06}>
-              <div className="flex h-full flex-col rounded-card bg-surface p-6 shadow-soft">
-                <span className="text-[1.5rem] font-semibold tracking-tight text-accent tnum">
-                  {s.n}
-                </span>
-                <h3 className="mt-4 text-[1.12rem] font-semibold tracking-[-0.01em]">
-                  {s.title}
-                </h3>
-                <p className="mt-2 text-[0.92rem] leading-relaxed text-muted">{s.body}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
       </div>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------- Features */
-function Features() {
-  return (
-    <section className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
-      <Reveal className="max-w-[42ch]">
-        <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-          Everything the fuzzy front-end needs.
-        </h2>
-      </Reveal>
-
-      <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-6">
-        <Reveal className="md:col-span-4 md:row-span-2">
-          <article className="flex h-full min-h-[320px] flex-col justify-between rounded-card bg-surface p-7 shadow-soft">
-            <div>
-              <h3 className="text-[1.5rem] font-semibold leading-tight tracking-[-0.02em]">
-                Any finish, any category
-              </h3>
-              <p className="mt-2 max-w-[46ch] text-[0.95rem] leading-relaxed text-muted">
-                Colours as swatches, everything else as photos. Set up the categories
-                that matter for this project — and only those.
-              </p>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <span
-                  key={c.id}
-                  className="rounded-full border border-line bg-surface-2 px-3.5 py-1.5 text-[0.85rem]"
-                >
-                  {c.name}
-                </span>
-              ))}
-            </div>
-          </article>
-        </Reveal>
-
-        <FeatureCell
-          title="One link, no login"
-          body="Your client opens it on their phone and starts. Nothing to install, nothing to sign up for."
-        >
-          <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-3 py-1.5 font-medium text-muted">
-            <Link2 className="size-4 text-accent" /> atelo.studio/c/…
-          </span>
-        </FeatureCell>
-
-        <FeatureCell
-          title="Favourites face off"
-          body="Pinned picks are pitted head-to-head until one clear winner survives per category."
-        >
-          <div className="flex items-center gap-2 text-[0.8rem] text-muted">
-            <span className="rounded-lg border border-line px-2.5 py-1">Sage</span>
-            <span className="text-faint">vs</span>
-            <span className="rounded-lg border border-accent px-2.5 py-1 text-accent">Clay</span>
-          </div>
-        </FeatureCell>
-
-        <FeatureCell
-          className="md:col-span-3"
-          title="A report, not a spreadsheet"
-          body="You get a clean, client-ready document — palette, selected finishes, and what it all means. Export to PDF and send."
-        >
-          <div className="flex -space-x-2">
-            {["#8C9184", "#E9E3D6", "#A9793F", "#26241F", "#B26B47"].map((c) => (
-              <span
-                key={c}
-                className="size-7 rounded-full ring-2 ring-surface"
-                style={{ background: c }}
-              />
-            ))}
-          </div>
-        </FeatureCell>
-
-        <FeatureCell
-          className="md:col-span-3"
-          title="Your studio, front and centre"
-          body="Custom branding on Pro. On the free tier, a tasteful footer quietly markets you to every client."
-        >
-          <span className="text-[0.85rem] text-muted">Prepared by your studio</span>
-        </FeatureCell>
-      </div>
-    </section>
-  );
-}
-
-function FeatureCell({
-  title,
-  body,
-  children,
-  className = "",
-}: {
-  title: string;
-  body: string;
-  children?: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Reveal className={`md:col-span-2 ${className}`}>
-      <article className="flex h-full min-h-[200px] flex-col justify-between rounded-card bg-surface p-6 shadow-soft">
-        <div>
-          <h3 className="text-[1.18rem] font-semibold leading-snug tracking-[-0.01em]">
-            {title}
-          </h3>
-          <p className="mt-2 text-[0.92rem] leading-relaxed text-muted">{body}</p>
+      <div className="relative mx-auto mt-12 max-w-[1000px]">
+        <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[44px] glow-cool opacity-40 blur-3xl" />
+        <div className="panel rounded-[32px] p-4 shadow-float sm:p-8">
+          <ReportPreview />
         </div>
-        <div className="mt-6">{children}</div>
-      </article>
-    </Reveal>
-  );
-}
-
-/* ----------------------------------------------------------- Report section */
-function ReportSection() {
-  return (
-    <section>
-      <div className="mx-auto max-w-[1200px] px-5 py-24 sm:px-8 sm:py-28">
-        <Reveal className="mx-auto max-w-[52ch] text-center">
-          <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-            Send a report, not a guessing game.
-          </h2>
-          <p className="mt-5 text-[1.05rem] leading-relaxed text-muted">
-            Nobody wants to read about the process. They want the answer — laid out,
-            on-brand, and ready to present. Here&apos;s what lands on your dashboard.
-          </p>
-        </Reveal>
-        <Reveal delay={0.08} className="mx-auto mt-12 max-w-[1000px]">
-          <div className="panel rounded-[30px] p-4 sm:p-8">
-            <ReportPreview />
-          </div>
-        </Reveal>
       </div>
     </section>
   );
@@ -358,63 +211,66 @@ const TIERS = [
 
 function Pricing() {
   return (
-    <section id="pricing" className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-24 sm:px-8 sm:py-28">
-      <Reveal className="max-w-[46ch]">
-        <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-          Pay per project. Never per seat you don&apos;t use.
+    <section
+      id="pricing"
+      className="mx-auto max-w-[1200px] scroll-mt-24 px-5 py-24 sm:px-8 sm:py-28"
+    >
+      <div className="mx-auto max-w-[46ch] text-center">
+        <h2 className="text-[clamp(2rem,4.5vw,3.2rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+          Pay per project. Never per seat.
         </h2>
         <p className="mt-5 text-[1.02rem] leading-relaxed text-muted">
           Boutique studios hate subscription fatigue — so the core of Atelo is a
           credit you buy once and expense to the invoice.
         </p>
-      </Reveal>
+      </div>
 
       <div className="mt-14 grid gap-4 lg:grid-cols-3">
-        {TIERS.map((t, i) => (
-          <Reveal key={t.name} delay={i * 0.06}>
-            <article
-              className={`flex h-full flex-col rounded-card p-7 ${
-                t.featured
-                  ? "border border-accent bg-surface shadow-float"
-                  : "bg-surface shadow-soft"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[0.85rem] font-medium text-muted">{t.name}</span>
-                {t.featured && (
-                  <span className="rounded-full bg-accent px-2.5 py-1 text-[0.66rem] font-medium uppercase tracking-[0.08em] text-white">
-                    Most popular
-                  </span>
-                )}
-              </div>
-              <div className="mt-6 flex items-baseline gap-2">
-                <span className="text-[2.6rem] font-semibold leading-none tracking-[-0.03em]">
-                  {t.price}
+        {TIERS.map((t) => (
+          <article
+            key={t.name}
+            className={`relative flex h-full flex-col overflow-hidden rounded-[24px] p-7 ${
+              t.featured ? "bg-surface shadow-float ring-2 ring-accent" : "bg-surface shadow-soft"
+            }`}
+          >
+            {t.featured && (
+              <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full glow-warm opacity-50 blur-3xl" />
+            )}
+            <div className="relative flex items-center justify-between">
+              <span className="text-[0.85rem] font-medium text-muted">{t.name}</span>
+              {t.featured && (
+                <span className="rounded-full bg-accent px-2.5 py-1 text-[0.66rem] font-medium uppercase tracking-[0.08em] text-white">
+                  Most popular
                 </span>
-                <span className="text-[0.9rem] text-muted">{t.unit}</span>
-              </div>
-              <p className="mt-3 min-h-[42px] text-[0.9rem] leading-relaxed text-muted">
-                {t.note}
-              </p>
-              <ul className="mt-6 space-y-3 border-t border-line pt-6">
-                {t.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-[0.9rem]">
-                    <span className="mt-[0.5em] size-1.5 shrink-0 rounded-full bg-accent" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 pt-2">
-                <Button
-                  href={t.href}
-                  variant={t.featured ? "accent" : "ghost"}
-                  className="w-full"
-                >
-                  {t.cta}
-                </Button>
-              </div>
-            </article>
-          </Reveal>
+              )}
+            </div>
+            <div className="relative mt-6 flex items-baseline gap-2">
+              <span className="text-[2.6rem] font-semibold leading-none tracking-[-0.03em]">
+                {t.price}
+              </span>
+              <span className="text-[0.9rem] text-muted">{t.unit}</span>
+            </div>
+            <p className="relative mt-3 min-h-[42px] text-[0.9rem] leading-relaxed text-muted">
+              {t.note}
+            </p>
+            <ul className="relative mt-6 space-y-3 border-t border-line pt-6">
+              {t.features.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-[0.9rem]">
+                  <span className="mt-[0.5em] size-1.5 shrink-0 rounded-full bg-accent" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="relative mt-8 pt-2">
+              <Button
+                href={t.href}
+                variant={t.featured ? "accent" : "ghost"}
+                className="w-full"
+              >
+                {t.cta}
+              </Button>
+            </div>
+          </article>
         ))}
       </div>
     </section>
