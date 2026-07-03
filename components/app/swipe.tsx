@@ -14,18 +14,31 @@ import type { Precedent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { recordResponse } from "@/lib/actions/projects";
+import { dominantHexFromUrl } from "@/lib/colour";
 
 type Verdict = "like" | "pass" | "pin";
 
-/** Buffer liked colours so the finish screen can analyse them instantly. */
-function persistLike(hex: string | undefined, name: string, category: string) {
-  if (!hex) return;
+/** Buffer a liked colour so the finish screen can analyse it instantly. */
+function bufferLike(hex: string, name: string, category: string) {
   try {
     const raw = sessionStorage.getItem("atelo:likes");
     const cur = raw ? (JSON.parse(raw) as unknown[]) : [];
     cur.push({ hex, name, category });
     sessionStorage.setItem("atelo:likes", JSON.stringify(cur));
   } catch {}
+}
+
+/** Record a liked option's colour so it feeds the profile — works on ANYTHING:
+ *  a swatch carries its hex; a photo gets a representative colour sampled from
+ *  the image so uploaded finishes count toward the taste read too. */
+function persistLike(p: Precedent, category: string) {
+  if (p.color) {
+    bufferLike(p.color, p.title, category);
+  } else if (p.src) {
+    void dominantHexFromUrl(p.src).then((hex) => {
+      if (hex) bufferLike(hex, p.title, category);
+    });
+  }
 }
 
 function Card({
@@ -177,7 +190,7 @@ export function SwipeDeck({
     if (sessionId) void recordResponse(sessionId, p.id, v).catch(() => {});
     if (v === "like" || v === "pin") {
       setLikes((a) => [...a, p.id]);
-      persistLike(p.color, p.title, categoryName);
+      persistLike(p, categoryName);
     }
     setDir(v === "pass" ? -1 : 1);
     x.set(0);

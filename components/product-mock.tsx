@@ -291,7 +291,10 @@ function SwatchFace({ p, float = false }: { p: Precedent; float?: boolean }) {
   );
 }
 
-/** "Try it" — a real, swipeable deck of exterior colour swatches. Large + prominent. */
+/** "Try it" — a real, swipeable deck of exterior colour swatches.
+ *  Responsive (fluid width, capped) and smooth in BOTH motion modes: a kinetic
+ *  fling when motion is allowed, a clean crossfade under reduced-motion — never
+ *  a half-transformed flash. */
 export function TestSwipe() {
   const mounted = useMounted();
   const reduce = useReducedMotion() ?? false;
@@ -300,14 +303,16 @@ export function TestSwipe() {
   const [liked, setLiked] = useState(0);
   const [dir, setDir] = useState(1);
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-220, 220], [-12, 12]);
-  const likeOp = useTransform(x, [20, 130], [0, 1]);
-  const nopeOp = useTransform(x, [-130, -20], [1, 0]);
+  const rotate = useTransform(x, [-220, 220], [-11, 11]);
+  const likeOp = useTransform(x, [30, 130], [0, 1]);
+  const nopeOp = useTransform(x, [-130, -30], [1, 0]);
 
   const deck = TEST_DECK;
-  const done = i >= deck.length;
+  const total = deck.length;
+  const done = i >= total;
 
   function go(like: boolean) {
+    if (done) return;
     setDir(like ? 1 : -1);
     if (like) setLiked((n) => n + 1);
     x.set(0);
@@ -320,18 +325,33 @@ export function TestSwipe() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[380px] flex-col items-center">
+    <div className="mx-auto flex w-full max-w-[340px] flex-col">
+      {/* header: category + progress — reads as "real product", keeps it grounded */}
+      <div className="mb-3 flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-[0.82rem] font-medium">
+          <span className="size-2 rounded-full bg-accent" /> Exterior Colour
+        </span>
+        <span className="tnum text-[0.8rem] text-muted">
+          {Math.min(i + 1, total)}/{total} · {liked} loved
+        </span>
+      </div>
+
       <div className="relative aspect-[4/5] w-full">
+        {/* peek card underneath — depth + continuity */}
         {!done && deck[i + 1] && (
-          <div className="absolute inset-0 translate-y-3 scale-[0.96] opacity-70">
+          <div aria-hidden className="absolute inset-0 translate-y-3 scale-[0.96] opacity-70">
             <SwatchFace p={deck[i + 1]} />
           </div>
         )}
-        <AnimatePresence custom={dir}>
+
+        <AnimatePresence mode="popLayout" custom={dir} initial={false}>
           {!done ? (
             <motion.div
               key={deck[i].id}
-              className={cn("absolute inset-0", interactive && "cursor-grab active:cursor-grabbing")}
+              className={cn(
+                "absolute inset-0",
+                interactive && "cursor-grab active:cursor-grabbing",
+              )}
               style={interactive ? { x, rotate } : undefined}
               drag={interactive ? "x" : false}
               dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -340,10 +360,18 @@ export function TestSwipe() {
                 if (info.offset.x > 110) go(true);
                 else if (info.offset.x < -110) go(false);
               }}
-              initial={mounted ? { scale: 0.96, opacity: 0 } : false}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={interactive ? { x: dir * 440, opacity: 0, rotate: dir * 16 } : { opacity: 0 }}
-              transition={{ duration: 0.32, ease: EASE }}
+              initial={interactive ? { scale: 0.96, opacity: 0 } : { opacity: 0 }}
+              animate={{ scale: 1, opacity: 1, transition: { duration: 0.3, ease: EASE } }}
+              exit={
+                interactive
+                  ? {
+                      x: dir * 460,
+                      rotate: dir * 15,
+                      opacity: 0,
+                      transition: { duration: 0.32, ease: [0.5, 0, 0.75, 0] },
+                    }
+                  : { opacity: 0, transition: { duration: 0.28, ease: EASE } }
+              }
             >
               <SwatchFace p={deck[i]} float />
               {interactive && (
@@ -366,17 +394,19 @@ export function TestSwipe() {
           ) : (
             <motion.div
               key="done"
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: EASE }}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[24px] bg-surface text-center shadow-float"
+              transition={{ duration: 0.35, ease: EASE }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[24px] border border-line bg-surface px-6 text-center shadow-float"
             >
               <div className="grid size-14 place-items-center rounded-full bg-accent/12 text-accent">
                 <Check className="size-7" />
               </div>
-              <div className="text-[1.2rem] font-semibold">You loved {liked} of {deck.length}</div>
-              <div className="max-w-[24ch] text-[0.9rem] text-muted">
-                That&apos;s the whole client experience — about five minutes.
+              <div className="text-[1.2rem] font-semibold">
+                You loved {liked} of {total}
+              </div>
+              <div className="max-w-[26ch] text-[0.9rem] leading-relaxed text-muted">
+                That&apos;s the whole client experience — quick, and kind of addictive.
               </div>
               <button
                 onClick={reset}
@@ -389,26 +419,28 @@ export function TestSwipe() {
         </AnimatePresence>
       </div>
 
-      {!done && (
-        <div className="mt-6 flex items-center gap-5">
-          <button
-            onClick={() => go(false)}
-            aria-label="Pass"
-            className="grid size-14 place-items-center rounded-full bg-surface text-muted shadow-soft transition-all hover:text-ink active:scale-90"
-          >
-            <X className="size-6" />
-          </button>
-          <button
-            onClick={() => go(true)}
-            aria-label="Love"
-            className="grid size-16 place-items-center rounded-full bg-accent text-white shadow-float transition-all hover:bg-accent-press active:scale-90"
-          >
-            <Heart className="size-7" />
-          </button>
-        </div>
-      )}
-      <p className="mt-4 text-center text-[0.85rem] text-muted">
-        {done ? "Nice taste." : "Drag the card, or tap — try it."}
+      <div className="mt-6 flex min-h-[64px] items-center justify-center gap-5">
+        {!done && (
+          <>
+            <button
+              onClick={() => go(false)}
+              aria-label="Pass"
+              className="grid size-14 place-items-center rounded-full bg-surface text-muted shadow-soft transition-all hover:text-ink active:scale-90"
+            >
+              <X className="size-6" />
+            </button>
+            <button
+              onClick={() => go(true)}
+              aria-label="Love"
+              className="grid size-16 place-items-center rounded-full bg-accent text-white shadow-float transition-all hover:bg-accent-press active:scale-90"
+            >
+              <Heart className="size-7" />
+            </button>
+          </>
+        )}
+      </div>
+      <p className="text-center text-[0.85rem] text-muted">
+        {done ? "Nice taste." : interactive ? "Drag the card, or tap — try it." : "Tap to love or pass."}
       </p>
     </div>
   );

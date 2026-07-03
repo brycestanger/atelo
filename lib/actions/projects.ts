@@ -22,8 +22,22 @@ function slugify(s: string) {
   );
 }
 
-function rid() {
-  return Math.random().toString(36).slice(2, 7);
+/** A clean, stable slug derived from the name — "Kerrisdale Kitchen" → "kerrisdale-kitchen".
+ *  Only appends -2, -3… if that exact slug is already taken, so the client link is
+ *  predictable and never changes once the board exists. */
+async function uniqueSlug(
+  supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>,
+  base: string,
+): Promise<string> {
+  const { data } = await supabase
+    .from("projects")
+    .select("slug")
+    .ilike("slug", `${base}%`);
+  const taken = new Set((data ?? []).map((r: { slug: string }) => r.slug));
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
 }
 
 export type NewBoardInput = {
@@ -42,7 +56,7 @@ export async function createBoard(input: NewBoardInput) {
   } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, reason: "unauthenticated" as const };
 
-  const slug = `${slugify(input.name)}-${rid()}`;
+  const slug = await uniqueSlug(supabase, slugify(input.name));
   const { data: project, error } = await supabase
     .from("projects")
     .insert({

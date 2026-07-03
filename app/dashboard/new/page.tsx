@@ -16,6 +16,7 @@ import { Button, Tag } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { createClient as browserClient } from "@/lib/supabase/client";
 import { createBoard, saveOptions, type NewOption } from "@/lib/actions/projects";
+import { dominantHexFromFile } from "@/lib/colour";
 import type { CategoryKind } from "@/lib/types";
 
 const STEP_LABELS = ["Project", "Categories", "Options", "Share"];
@@ -70,6 +71,7 @@ export default function NewBoardPage() {
   }
   function addPhotos(files: FileList | null) {
     if (!files?.length) return;
+    const catIdx = active;
     const opts: Opt[] = Array.from(files).map((f) => ({
       id: rid(),
       title: f.name.replace(/\.[a-z0-9]+$/i, ""),
@@ -77,7 +79,27 @@ export default function NewBoardPage() {
       file: f,
       url: URL.createObjectURL(f),
     }));
-    patchCat(active, { options: [...cats[active].options, ...opts] });
+    patchCat(catIdx, { options: [...cats[catIdx].options, ...opts] });
+    // Sample a representative colour from each photo so uploaded finishes feed
+    // the colour-analysis engine just like swatches — the AI read works on anything.
+    opts.forEach((o) => {
+      if (!o.file) return;
+      void dominantHexFromFile(o.file).then((hex) => {
+        if (!hex) return;
+        setCats((cs) =>
+          cs.map((c, idx) =>
+            idx === catIdx
+              ? {
+                  ...c,
+                  options: c.options.map((op) =>
+                    op.id === o.id ? { ...op, color: hex } : op,
+                  ),
+                }
+              : c,
+          ),
+        );
+      });
+    });
   }
   function addSwatch() {
     const opt: Opt = {
@@ -123,7 +145,13 @@ export default function NewBoardPage() {
           const path = `${res.projectId}/${rid()}-${safe}`;
           const up = await supabase.storage.from("options").upload(path, o.file);
           if (!up.error) {
-            toSave.push({ categoryId: created.id, title: o.title, kind: "photo", imagePath: path });
+            toSave.push({
+              categoryId: created.id,
+              title: o.title,
+              kind: "photo",
+              imagePath: path,
+              color: o.color, // sampled dominant colour → feeds the finish report's analysis
+            });
           }
         }
       }

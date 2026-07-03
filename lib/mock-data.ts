@@ -58,8 +58,9 @@ export const PRECEDENTS: Precedent[] = [
   { id: "fi5", categoryId: "fixtures", kind: "photo", src: img("photo-1623111771733-d3ab4d26ce41"), title: "Wall-mount", meta: "Minimal spout" },
 ];
 
-/** A diverse spread of real catalogue paint colours as swipeable swatches. */
-export function catalogSwatches(limit = 28): Precedent[] {
+/** A diverse spread of real catalogue paint colours as swipeable swatches.
+ *  Kept short by default — the demo should feel like a quick taste, not a chore. */
+export function catalogSwatches(limit = 6): Precedent[] {
   const paints = CATALOG.filter((c) => c.category === "paint" && c.hex);
   const step = Math.max(1, Math.floor(paints.length / limit));
   const picked: Precedent[] = [];
@@ -78,13 +79,13 @@ export function catalogSwatches(limit = 28): Precedent[] {
 }
 
 export function precedentsByCategory(categoryId: string): Precedent[] {
-  // the colour category pulls from the real product catalogue
-  if (categoryId === "exterior-colour") return catalogSwatches(28);
+  // the colour category pulls a short, varied set from the real product catalogue
+  if (categoryId === "exterior-colour") return catalogSwatches(6);
   return PRECEDENTS.filter((p) => p.categoryId === categoryId);
 }
 
-/** The little test deck on the landing page: exterior colour swatches. */
-export const TEST_DECK = precedentsByCategory("exterior-colour");
+/** The little test deck on the landing page: a handful of exterior colours. */
+export const TEST_DECK = catalogSwatches(6);
 
 export const PROJECTS: Project[] = [
   {

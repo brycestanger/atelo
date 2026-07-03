@@ -1,10 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Link2, Check } from "lucide-react";
+import { Download, Link2, Check, Copy } from "lucide-react";
 import type { Brief } from "@/lib/types";
 import { Button } from "@/components/ui";
 import { ProfileCard } from "@/components/app/profile-card";
+
+/** The board's permanent client link — same URL for the life of the project.
+ *  Surfaced on the board page so it's always retrievable, never regenerated. */
+export function ClientLinkBar({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+  const path = `/c/${slug}`;
+  const shown =
+    typeof window !== "undefined" ? `${window.location.host}${path}` : `atelo.studio${path}`;
+  const copy = () => {
+    const url =
+      typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    navigator.clipboard?.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    });
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-card border border-line bg-surface p-2 pl-4 shadow-soft print:hidden">
+      <div className="min-w-0 flex-1">
+        <div className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted">
+          Client link — always the same
+        </div>
+        <div className="truncate text-[0.9rem] font-medium">{shown}</div>
+      </div>
+      <Button variant={copied ? "accent" : "primary"} size="sm" onClick={copy}>
+        {copied ? (
+          <>
+            <Check className="size-4" /> Copied
+          </>
+        ) : (
+          <>
+            <Copy className="size-4" /> Copy link
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
 
 export function ProjectActions({ projectId }: { projectId: string }) {
   const [copied, setCopied] = useState(false);
