@@ -7,6 +7,7 @@ import { LayoutGrid, Plus, Coins, Settings, ArrowUpRight } from "lucide-react";
 import type { Project, ProjectStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button, Dot, Wordmark } from "@/components/ui";
+import { signOut } from "@/lib/actions/auth";
 
 const NAV = [
   { label: "Boards", href: "/dashboard", icon: LayoutGrid },
@@ -59,6 +60,12 @@ export function Sidebar() {
           Buy more
         </Button>
       </div>
+      <button
+        onClick={() => signOut()}
+        className="mt-3 w-full rounded-full px-3 py-2 text-[0.85rem] text-muted transition-colors hover:text-ink"
+      >
+        Sign out
+      </button>
     </aside>
   );
 }

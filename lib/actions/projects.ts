@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Brief, CategoryKind, Precedent } from "@/lib/types";
+import type { Brief, CategoryKind, Precedent, Project } from "@/lib/types";
 
 const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -182,6 +182,50 @@ export async function getBoard(slug: string): Promise<BoardData | null> {
     }));
 
   return { id: d.id, name: d.name, client: d.client_name, slug: d.slug, status: d.status, categories };
+}
+
+/** The signed-in designer's own boards, for the dashboard grid. */
+export async function listMyBoards(): Promise<Project[] | null> {
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("projects")
+    .select("name,client_name,slug,status,created_at,categories(id,options(id))")
+    .eq("owner", user.id)
+    .order("created_at", { ascending: false });
+  if (!data) return [];
+
+  const rows = data as unknown as {
+    name: string;
+    client_name: string | null;
+    slug: string;
+    status: string;
+    created_at: string;
+    categories: { id: string; options: { id: string }[] }[];
+  }[];
+
+  return rows.map((p) => ({
+    id: p.slug,
+    name: p.name,
+    client: p.client_name ?? "—",
+    status: p.status as Project["status"],
+    updated: new Date(p.created_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
+    categories: (p.categories ?? []).map((c) => ({
+      id: c.id,
+      name: "",
+      kind: "photo" as const,
+      count: c.options?.length ?? 0,
+    })),
+    swipeProgress: p.status === "ready" ? 1 : p.status === "swiping" ? 0.5 : 0,
+  }));
 }
 
 /* ------------------------------------------------- client recording */

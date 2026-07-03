@@ -2,36 +2,57 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button, Wordmark } from "@/components/ui";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { signUpUser } from "@/lib/actions/auth";
 
 export default function LoginPage() {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     setError(null);
+    setBusy(true);
 
-    if (isSupabaseConfigured) {
-      setBusy(true);
-      const supabase = createClient();
-      const { error } = await supabase!.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-      });
-      setBusy(false);
+    if (!isSupabaseConfigured) {
+      window.location.assign("/dashboard");
+      return;
+    }
+    const supabase = createClient();
+    if (!supabase) {
+      window.location.assign("/dashboard");
+      return;
+    }
+    try {
+      if (mode === "signup") {
+        const res = await signUpUser(email, password);
+        if (!res.ok) {
+          setError(res.reason || "Could not create account.");
+          setBusy(false);
+          return;
+        }
+      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError(error.message);
+        setBusy(false);
         return;
       }
+      window.location.assign("/dashboard");
+    } catch {
+      setError("Something went wrong. Try again.");
+      setBusy(false);
     }
-    setSent(true);
   }
+
+  const inputCls =
+    "h-12 w-full rounded-2xl bg-surface px-4 text-[0.95rem] shadow-soft outline-none transition-shadow placeholder:text-faint focus:ring-2 focus:ring-accent/30";
 
   return (
     <div className="grid min-h-screen place-items-center bg-bg px-5">
@@ -39,59 +60,62 @@ export default function LoginPage() {
         <Link href="/" aria-label="Atelo home">
           <Wordmark />
         </Link>
+        <h1 className="mt-10 text-[1.7rem] font-semibold tracking-[-0.02em]">
+          {mode === "signin" ? "Welcome back" : "Create your studio"}
+        </h1>
+        <p className="mt-2 text-[0.92rem] text-muted">
+          {mode === "signin"
+            ? "Sign in to your Atelo dashboard."
+            : "Email and a password — that's it."}
+        </p>
 
-        {!sent ? (
-          <form onSubmit={onSubmit} className="mt-10">
-            <h1 className="text-[1.6rem] font-semibold tracking-[-0.02em]">Sign in</h1>
-            <p className="mt-2 text-[0.92rem] leading-relaxed text-muted">
-              We&apos;ll email you a magic link. No passwords, ever.
-            </p>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@studio.com"
-              className="mt-6 h-12 w-full rounded-full border border-line bg-surface px-5 text-[0.95rem] outline-none transition-colors placeholder:text-faint focus:border-ink/40"
-            />
-            {error && (
-              <p className="mt-2 text-[0.82rem] text-accent">{error}</p>
-            )}
-            <Button
-              type="submit"
-              variant="primary"
-              className={`mt-3 w-full ${busy ? "pointer-events-none opacity-60" : ""}`}
-            >
-              {busy ? "Sending…" : "Send magic link"} <ArrowRight className="size-4" />
-            </Button>
-            <p className="mt-6 text-center text-[0.8rem] text-faint">
-              {isSupabaseConfigured
-                ? "New here? A link creates your account."
-                : "Demo mode — connect Supabase (see SUPABASE.md) to go live."}
-            </p>
-          </form>
-        ) : (
-          <div className="mt-10">
-            <div className="grid size-12 place-items-center rounded-full bg-accent/12 text-accent">
-              <Check className="size-6" strokeWidth={2} />
-            </div>
-            <h1 className="mt-6 text-[1.6rem] font-semibold tracking-[-0.02em]">
-              {isSupabaseConfigured ? "Check your email" : "You're all set"}
-            </h1>
-            <p className="mt-2 text-[0.92rem] leading-relaxed text-muted">
-              {isSupabaseConfigured ? (
-                <>
-                  We sent a link to <span className="text-ink">{email}</span>. Click
-                  it to sign in.
-                </>
-              ) : (
-                "Supabase isn't connected yet, so hop straight into the demo dashboard."
-              )}
-            </p>
-            <Button href="/dashboard" variant="ghost" className="mt-6 w-full">
-              Continue to the dashboard
-            </Button>
-          </div>
+        <form onSubmit={submit} className="mt-7 space-y-3">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@studio.com"
+            autoComplete="email"
+            className={inputCls}
+          />
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={mode === "signup" ? "Password (6+ characters)" : "Password"}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            className={inputCls}
+          />
+          {error && <p className="text-[0.82rem] text-accent">{error}</p>}
+          <Button
+            type="submit"
+            variant="primary"
+            className={`w-full ${busy ? "pointer-events-none opacity-60" : ""}`}
+          >
+            {busy ? "…" : mode === "signin" ? "Sign in" : "Create account"}
+            <ArrowRight className="size-4" />
+          </Button>
+        </form>
+
+        <p className="mt-6 text-center text-[0.85rem] text-muted">
+          {mode === "signin" ? "New to Atelo? " : "Already have an account? "}
+          <button
+            onClick={() => {
+              setMode(mode === "signin" ? "signup" : "signin");
+              setError(null);
+            }}
+            className="font-medium text-ink underline-offset-4 hover:underline"
+          >
+            {mode === "signin" ? "Create an account" : "Sign in"}
+          </button>
+        </p>
+        {!isSupabaseConfigured && (
+          <p className="mt-4 text-center text-[0.78rem] text-faint">
+            Demo mode — connect Supabase to go live.
+          </p>
         )}
       </div>
     </div>
