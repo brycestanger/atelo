@@ -38,7 +38,7 @@ export default async function ProjectPage({
           <p className="mt-1 text-[0.92rem] text-muted">
             {client && client !== "—"
               ? `Client · ${client}`
-              : "Built from your client's swipes and showdown"}
+              : "Built from your client's swipes"}
           </p>
         </div>
         <ProjectActions projectId={id} />

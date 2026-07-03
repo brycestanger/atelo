@@ -1,4 +1,5 @@
 import type { Brief, Category, Precedent, Project } from "@/lib/types";
+import { CATALOG } from "@/lib/catalog";
 
 const U = "https://images.unsplash.com/";
 
@@ -57,7 +58,28 @@ export const PRECEDENTS: Precedent[] = [
   { id: "fi5", categoryId: "fixtures", kind: "photo", src: img("photo-1623111771733-d3ab4d26ce41"), title: "Wall-mount", meta: "Minimal spout" },
 ];
 
+/** A diverse spread of real catalogue paint colours as swipeable swatches. */
+export function catalogSwatches(limit = 28): Precedent[] {
+  const paints = CATALOG.filter((c) => c.category === "paint" && c.hex);
+  const step = Math.max(1, Math.floor(paints.length / limit));
+  const picked: Precedent[] = [];
+  for (let i = 0; i < paints.length && picked.length < limit; i += step) {
+    const c = paints[i];
+    picked.push({
+      id: `cat-${c.id}`,
+      categoryId: "exterior-colour",
+      kind: "swatch",
+      color: c.hex,
+      title: c.name,
+      meta: `${c.brand}${c.finish ? ` · ${c.finish}` : ""}`,
+    });
+  }
+  return picked;
+}
+
 export function precedentsByCategory(categoryId: string): Precedent[] {
+  // the colour category pulls from the real product catalogue
+  if (categoryId === "exterior-colour") return catalogSwatches(28);
   return PRECEDENTS.filter((p) => p.categoryId === categoryId);
 }
 
