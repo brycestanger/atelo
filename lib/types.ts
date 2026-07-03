@@ -44,6 +44,31 @@ export type Project = {
 
 export type PaletteSwatch = { name: string; hex: string };
 
+/** Output of the colour-analysis engine (lib/analysis.ts) — the "AI summary". */
+export type ColourProfile = {
+  /** e.g. "You lean deep, cool green." */
+  headline: string;
+  /** short evocative label, e.g. "The Forest Modernist" */
+  persona: string;
+  /** dominant hue family label, e.g. "Green" */
+  family: string;
+  /** representative hex of the dominant family */
+  familyHex: string;
+  temperature: "warm" | "cool" | "balanced";
+  value: "light" | "mid" | "dark";
+  saturation: "muted" | "balanced" | "vivid";
+  /** 0..1 share of near-neutral picks */
+  neutralRatio: number;
+  /** 2–3 sentence prose summary */
+  description: string;
+  /** short descriptor chips */
+  traits: string[];
+  /** the standout liked colours, deduped */
+  palette: PaletteSwatch[];
+  /** complementary / adjacent colours to explore next */
+  suggestions: { name: string; hex: string; why: string }[];
+};
+
 /** One resolved pick per category — the heart of the client report. */
 export type Selection = {
   category: string;
@@ -62,4 +87,6 @@ export type Brief = {
   palette: PaletteSwatch[];
   selections: Selection[];
   notes: string[];
+  /** colour-preference analysis — the automatic summary (see lib/analysis.ts) */
+  profile?: ColourProfile;
 };

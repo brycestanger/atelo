@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download, Link2, Check } from "lucide-react";
 import type { Brief } from "@/lib/types";
 import { Button } from "@/components/ui";
+import { ProfileCard } from "@/components/app/profile-card";
 
 export function ProjectActions({ projectId }: { projectId: string }) {
   const [copied, setCopied] = useState(false);
@@ -63,73 +64,82 @@ export function FinishReport({
           <div className="flex items-center justify-end gap-1.5 text-[0.85rem] font-medium">
             <span className="size-2 rounded-full bg-accent" /> Atelo
           </div>
-          <div className="mt-0.5 text-[0.72rem] text-muted">Prepared June 2026</div>
+          <div className="mt-0.5 text-[0.72rem] text-muted">Prepared July 2026</div>
         </div>
       </div>
 
-      {/* direction + palette */}
-      <div className="grid gap-8 border-b border-line p-7 sm:grid-cols-[1.2fr_1fr]">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
-              Direction
-            </span>
-            <span className="text-[0.72rem] font-medium text-accent tnum">
-              {Math.round(brief.confidence * 100)}% aligned
-            </span>
-          </div>
-          <h2 className="mt-2 text-[clamp(1.9rem,3.5vw,2.7rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-            {brief.style}
-          </h2>
-          <p className="mt-4 max-w-[52ch] text-[1rem] leading-relaxed text-muted">
-            {brief.summary}
-          </p>
-          <ul className="mt-6 space-y-2">
-            {brief.notes.map((n) => (
-              <li key={n} className="flex items-start gap-2.5 text-[0.9rem]">
-                <span className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-accent" />
-                {n}
-              </li>
-            ))}
-          </ul>
+      {/* colour profile — the automatic summary */}
+      {brief.profile && (
+        <div className="border-b border-line p-7">
+          <ProfileCard profile={brief.profile} />
         </div>
+      )}
 
-        <div>
-          <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
-            Palette
+      {/* direction + palette (fallback when there's no colour profile) */}
+      {!brief.profile && (
+        <div className="grid gap-8 border-b border-line p-7 sm:grid-cols-[1.2fr_1fr]">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
+                Direction
+              </span>
+              <span className="text-[0.72rem] font-medium text-accent tnum">
+                {Math.round(brief.confidence * 100)}% aligned
+              </span>
+            </div>
+            <h2 className="mt-2 text-[clamp(1.9rem,3.5vw,2.7rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+              {brief.style}
+            </h2>
+            <p className="mt-4 max-w-[52ch] text-[1rem] leading-relaxed text-muted">
+              {brief.summary}
+            </p>
+            <ul className="mt-6 space-y-2">
+              {brief.notes.map((n) => (
+                <li key={n} className="flex items-start gap-2.5 text-[0.9rem]">
+                  <span className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-accent" />
+                  {n}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="mt-3 space-y-2">
-            {brief.palette.map((c) => (
-              <div
-                key={c.name}
-                className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-2.5"
-              >
-                <span
-                  className="size-9 shrink-0 rounded-lg ring-1 ring-line"
-                  style={{ background: c.hex }}
-                />
-                <div className="flex flex-1 items-center justify-between">
-                  <span className="text-[0.88rem] font-medium">{c.name}</span>
-                  <span className="text-[0.72rem] uppercase text-muted">{c.hex}</span>
+
+          <div>
+            <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
+              Palette
+            </div>
+            <div className="mt-3 space-y-2">
+              {brief.palette.map((c) => (
+                <div
+                  key={c.name}
+                  className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-2.5"
+                >
+                  <span
+                    className="size-9 shrink-0 rounded-lg ring-1 ring-line"
+                    style={{ background: c.hex }}
+                  />
+                  <div className="flex flex-1 items-center justify-between">
+                    <span className="text-[0.88rem] font-medium">{c.name}</span>
+                    <span className="text-[0.72rem] uppercase text-muted">{c.hex}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* selected finishes */}
+      {/* loved finishes */}
       <div className="p-7">
         <div className="flex items-center justify-between">
           <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted">
-            Selected finishes
+            Loved finishes
           </div>
-          <div className="text-[0.72rem] text-muted">one winner per category</div>
+          <div className="text-[0.72rem] text-muted">everything they swiped right</div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {brief.selections.map((s) => (
+          {brief.selections.map((s, i) => (
             <figure
-              key={s.category}
+              key={`${s.category}-${s.title}-${i}`}
               className="overflow-hidden rounded-xl border border-line bg-surface"
             >
               <div className="aspect-square overflow-hidden">

@@ -1,12 +1,13 @@
 import { ArrowRight, Heart, X, Plus } from "lucide-react";
 import { Button, Dot } from "@/components/ui";
+import { ResetLikes } from "@/components/app/client-summary";
 import { CATEGORIES, PROJECTS } from "@/lib/mock-data";
 import { getBoard } from "@/lib/actions/projects";
 
 const TUTORIAL = [
   { icon: Heart, title: "Swipe right to love", body: "Anything that speaks to you. Don't overthink it." },
   { icon: X, title: "Swipe left to pass", body: "Not your taste? Send it on." },
-  { icon: Plus, title: "Tap + to pin a favourite", body: "The ones you adore. They face off later." },
+  { icon: Plus, title: "Tap + for an instant favourite", body: "The ones you adore — they carry extra weight." },
 ];
 
 export default async function ClientWelcome({
@@ -30,6 +31,8 @@ export default async function ClientWelcome({
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-57px)] max-w-[560px] flex-col justify-center px-5 py-12">
+      {/* fresh start for the liked-colours buffer */}
+      <ResetLikes />
       <span className="inline-flex w-fit items-center gap-2 rounded-full bg-surface px-3.5 py-1.5 text-[0.8rem] text-muted shadow-soft">
         <Dot /> {clientName ? `For ${clientName}` : "A quick taste check"}
       </span>
@@ -40,8 +43,8 @@ export default async function ClientWelcome({
       </h1>
       <p className="mt-5 max-w-[46ch] text-[1.02rem] leading-relaxed text-muted">
         {projectName ? `${projectName} starts with your taste. ` : "This starts with your taste. "}
-        Swipe through a few options — about five minutes — and your designer shapes
-        everything around what you choose.
+        Swipe through a few options — about five minutes — and Atelo reads your
+        colour profile while your designer shapes everything around it.
       </p>
 
       <div className="mt-9 space-y-3">

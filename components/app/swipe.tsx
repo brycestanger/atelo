@@ -17,6 +17,17 @@ import { recordResponse } from "@/lib/actions/projects";
 
 type Verdict = "like" | "pass" | "pin";
 
+/** Buffer liked colours so the finish screen can analyse them instantly. */
+function persistLike(hex: string | undefined, name: string, category: string) {
+  if (!hex) return;
+  try {
+    const raw = sessionStorage.getItem("atelo:likes");
+    const cur = raw ? (JSON.parse(raw) as unknown[]) : [];
+    cur.push({ hex, name, category });
+    sessionStorage.setItem("atelo:likes", JSON.stringify(cur));
+  } catch {}
+}
+
 function Card({
   p,
   x,
@@ -102,16 +113,15 @@ function ActionBtn({
 }
 
 function DeckComplete({
-  pins,
   likes,
   nextHref,
   categoryName,
 }: {
-  pins: number;
   likes: number;
   nextHref: string;
   categoryName: string;
 }) {
+  const last = nextHref.includes("/complete");
   return (
     <div className="flex w-full max-w-[420px] flex-col items-center text-center">
       <div className="grid size-16 place-items-center rounded-full bg-accent/12 text-accent">
@@ -121,12 +131,12 @@ function DeckComplete({
         {categoryName} — done
       </h2>
       <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">
-        You loved <span className="text-ink">{likes}</span> and pinned{" "}
-        <span className="text-ink">{pins}</span>.{" "}
-        {pins > 1 ? "Now pick a winner." : "Nicely done."}
+        You loved <span className="text-ink">{likes}</span>{" "}
+        {likes === 1 ? "option" : "options"}.{" "}
+        {last ? "Let's read your taste." : "On to the next one."}
       </p>
       <Button href={nextHref} variant="accent" size="lg" className="mt-8">
-        {pins > 1 ? "Start the showdown" : "Continue"}
+        {last ? "See your colour profile" : "Continue"}
         <ArrowRight className="size-4" />
       </Button>
     </div>
@@ -151,7 +161,6 @@ export function SwipeDeck({
   const interactive = mounted && !prefersReduced;
 
   const [index, setIndex] = useState(0);
-  const [pins, setPins] = useState<string[]>([]);
   const [likes, setLikes] = useState<string[]>([]);
   const [dir, setDir] = useState(1);
   const x = useMotionValue(0);
@@ -166,8 +175,10 @@ export function SwipeDeck({
     const p = precedents[index];
     if (!p) return;
     if (sessionId) void recordResponse(sessionId, p.id, v).catch(() => {});
-    if (v === "pin") setPins((a) => [...a, p.id]);
-    if (v === "like" || v === "pin") setLikes((a) => [...a, p.id]);
+    if (v === "like" || v === "pin") {
+      setLikes((a) => [...a, p.id]);
+      persistLike(p.color, p.title, categoryName);
+    }
     setDir(v === "pass" ? -1 : 1);
     x.set(0);
     setIndex((i) => i + 1);
@@ -175,12 +186,7 @@ export function SwipeDeck({
 
   if (done) {
     return (
-      <DeckComplete
-        pins={pins.length}
-        likes={likes.length}
-        nextHref={nextHref}
-        categoryName={categoryName}
-      />
+      <DeckComplete likes={likes.length} nextHref={nextHref} categoryName={categoryName} />
     );
   }
 
@@ -191,7 +197,7 @@ export function SwipeDeck({
           <span className="size-2 rounded-full bg-accent" /> {categoryName}
         </span>
         <span className="text-[0.8rem] text-muted tnum">
-          {index + 1}/{total} · {pins.length} pinned
+          {index + 1}/{total} · {likes.length} loved
         </span>
       </div>
       <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-ink/8">
@@ -244,7 +250,7 @@ export function SwipeDeck({
         <ActionBtn onClick={() => advance("pass")} label="Pass">
           <X className="size-5" strokeWidth={2.2} />
         </ActionBtn>
-        <ActionBtn onClick={() => advance("pin")} variant="accent" large label="Pin">
+        <ActionBtn onClick={() => advance("pin")} variant="accent" large label="Love a favourite">
           <Plus className="size-6" strokeWidth={2.4} />
         </ActionBtn>
         <ActionBtn onClick={() => advance("like")} label="Love">
@@ -252,7 +258,7 @@ export function SwipeDeck({
         </ActionBtn>
       </div>
       <p className="mt-4 text-center text-[0.82rem] text-muted">
-        Drag or tap · right loves · left passes · + pins a favourite
+        Drag or tap · right to love, left to pass
       </p>
     </div>
   );

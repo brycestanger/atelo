@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Brief, CategoryKind, Precedent, Project } from "@/lib/types";
+import { analyzeColours, analysisConfidence, type LikedColour } from "@/lib/analysis";
 
 const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -266,7 +267,8 @@ export async function completeSession(sessionId: string, projectId: string) {
 }
 
 /* ------------------------------------------------- report generation */
-/** Build the finish report from the client's latest session (winners + likes). */
+/** Build the finish report from everything the client LIKED, then run the
+ *  colour-analysis engine over their liked colours — no showdown. */
 export async function buildReport(projectId: string): Promise<Brief | null> {
   const supabase = await createClient();
   if (!supabase) return null;
@@ -280,51 +282,49 @@ export async function buildReport(projectId: string): Promise<Brief | null> {
     .single();
   if (!sess) return null;
 
-  const { data: wins } = await supabase
-    .from("winners")
-    .select("category_id, categories(name), options(title, meta, kind, image_path, color)")
-    .eq("session_id", sess.id);
-  if (!wins || !wins.length) return null;
+  const { data: liked } = await supabase
+    .from("responses")
+    .select("verdict, options(title, meta, kind, image_path, color, categories(name))")
+    .eq("session_id", sess.id)
+    .in("verdict", ["like", "pin"]);
+  if (!liked || !liked.length) return null;
 
-  const w = wins as unknown as {
-    category_id: string;
-    categories: { name: string } | null;
+  const rows = liked as unknown as {
+    verdict: string;
     options: {
       title: string;
       meta: string | null;
       kind: CategoryKind;
       image_path: string | null;
       color: string | null;
+      categories: { name: string } | null;
     } | null;
   }[];
 
-  const selections = w.map((row) => ({
-    category: row.categories?.name ?? "Category",
-    title: row.options?.title ?? "Selection",
-    kind: (row.options?.kind ?? "photo") as CategoryKind,
-    src: publicUrl(row.options?.image_path),
-    color: row.options?.color ?? undefined,
-    note: row.options?.meta ?? "",
-  }));
+  const selections = rows
+    .filter((r) => r.options)
+    .map((r) => ({
+      category: r.options!.categories?.name ?? "Finish",
+      title: r.options!.title,
+      kind: (r.options!.kind ?? "photo") as CategoryKind,
+      src: publicUrl(r.options!.image_path),
+      color: r.options!.color ?? undefined,
+      note: r.options!.meta ?? "",
+    }));
 
-  const palette = selections
+  const likedColours: LikedColour[] = selections
     .filter((s) => s.color)
-    .map((s) => ({ name: s.category, hex: s.color as string }))
-    .slice(0, 5);
+    .map((s) => ({ hex: s.color as string, name: s.title, category: s.category }));
 
-  const { count: loved } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("session_id", sess.id)
-    .in("verdict", ["like", "pin"]);
+  const profile = analyzeColours(likedColours);
 
   return {
-    style: "Client Selection",
-    confidence: 0.9,
-    summary:
-      "Built from your client's picks across every category. Each winner was chosen head-to-head in the showdown — this is what resonated most.",
-    palette: palette.length ? palette : [{ name: "Neutral", hex: "#8C9184" }],
+    style: profile.persona,
+    confidence: analysisConfidence(likedColours),
+    summary: profile.description,
+    palette: profile.palette.length ? profile.palette : [{ name: "Neutral", hex: "#8C9184" }],
     selections,
-    notes: ["One winner per category", `${loved ?? 0} options loved`, "Ready to present"],
+    notes: profile.traits,
+    profile,
   };
 }

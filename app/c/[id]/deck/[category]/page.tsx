@@ -16,12 +16,13 @@ export default async function DeckPage({
 
   let categoryName: string;
   let precedents: Precedent[];
-  let nextHref = `/c/${id}/compare/${category}`;
+  let nextHref = `/c/${id}/complete`;
   let sessionId = s;
 
   if (board) {
-    const cat =
-      board.categories.find((c) => c.id === category) ?? board.categories[0];
+    const cats = board.categories;
+    const idx = Math.max(0, cats.findIndex((c) => c.id === category));
+    const cat = cats[idx] ?? cats[0];
     categoryName = cat?.name ?? "Finishes";
     precedents = cat?.options ?? [];
     // one session for the whole board — start it on the first category, then thread it.
@@ -30,7 +31,9 @@ export default async function DeckPage({
       sessionId = sid ?? undefined;
     }
     const q = sessionId ? `?s=${sessionId}&p=${board.id}` : "";
-    nextHref = `/c/${id}/compare/${cat?.id ?? category}${q}`;
+    // no showdown — straight to the next category, then the finish line
+    const next = cats[idx + 1];
+    nextHref = next ? `/c/${id}/deck/${next.id}${q}` : `/c/${id}/complete${q}`;
   } else {
     const cat = CATEGORIES.find((c) => c.id === category) ?? CATEGORIES[0];
     categoryName = cat.name;
